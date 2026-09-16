@@ -19,7 +19,7 @@
         <maven.compiler.source>21</maven.compiler.source>
         <maven.compiler.target>21</maven.compiler.target>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <spring-boot.version>3.3.0</spring-boot.version>
+        <spring-boot.version>4.1.1</spring-boot.version>
         <!-- Pin every shared dependency version HERE, once, so every module
              inherits the same version instead of drifting per-service. -->
     </properties>
