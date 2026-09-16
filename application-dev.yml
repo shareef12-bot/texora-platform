@@ -1,0 +1,29 @@
+# =============================================================================
+# application-dev.yml — activated by SPRING_PROFILES_ACTIVE=dev
+# For running against docker-compose locally on a developer's machine.
+# =============================================================================
+
+spring:
+  datasource:
+    url: jdbc:postgresql://localhost:5432/sso_service
+    username: sso_dev
+    password: dev_only_not_a_real_secret   # fine to hardcode ONLY in the dev profile,
+                                            # since this only ever points at your local
+                                            # docker-compose Postgres, never a real environment
+
+  kafka:
+    bootstrap-servers: localhost:9092
+
+  data:
+    redis:
+      host: localhost
+      port: 6379
+
+logging:
+  level:
+    root: INFO
+    com.texora: DEBUG              # verbose locally, not in staging/prod
+
+# Relaxed for local frontend development only — never present in staging/prod
+cors:
+  allowed-origins: "http://localhost:3000"

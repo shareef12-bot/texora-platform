@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <groupId>com.texora</groupId>
+    <artifactId>texora-platform</artifactId>
+    <version>0.1.0-SNAPSHOT</version>
+    <packaging>pom</packaging>
+    <name>Texora Platform (Parent)</name>
+    <description>
+        Monorepo parent POM for the Texora platform: 8 core security control-plane
+        services, the Quality Automation Platform (QAP), and shared platform foundation
+        libraries. See 00-docs/build-plan/ for the full build plan and per-service prompts.
+    </description>
+
+    <properties>
+        <maven.compiler.source>21</maven.compiler.source>
+        <maven.compiler.target>21</maven.compiler.target>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <spring-boot.version>3.3.0</spring-boot.version>
+        <!-- Pin every shared dependency version HERE, once, so every module
+             inherits the same version instead of drifting per-service. -->
+    </properties>
+
+    <!--
+        MODULE LIST — add one line per module as it is actually built.
+        Do NOT pre-list modules that don't exist as folders yet; an empty
+        <module> entry breaks the build. Uncomment/add as each is created.
+
+        Build order matches 00-OVERVIEW-plan-and-decisions.md Part A.1:
+          Platform Foundation first, then SSO -> SEC -> SIEM -> FTP -> DC ->
+          LDAP -> VPN -> CGI, with QAP Part A alongside Foundation and
+          QAP Part B alongside Integration.
+    -->
+    <modules>
+        <!-- Step 0: Platform Foundation — build these first -->
+        <module>01-platform-foundation/texora-secops-starter</module>
+        <module>01-platform-foundation/texora-iam-client</module>
+        <module>01-platform-foundation/texora-audit-sdk</module>
+        <module>01-platform-foundation/sec-contract-stub</module>
+
+        <!--
+        Uncomment each line below the moment that service's folder exists
+        with its own pom.xml, in build order:
+
+        <module>02-services/qap-service</module>          Part A only, alongside Foundation
+        <module>02-services/sso-service</module>          Step 1
+        <module>02-services/sec-service</module>           Step 2
+        <module>02-services/siem-service</module>          Step 3
+        <module>02-services/ftp-service</module>           Step 4
+        <module>02-services/dc-service</module>            Step 5 (check ADR-D2 first)
+        <module>02-services/ldap-service</module>          Step 6 (check ADR-D5 first)
+        <module>02-services/vpn-service</module>            Step 7 (check ADR-D5 first)
+        <module>02-services/cgi-service</module>            Step 8 (check ADR-D5 first)
+        -->
+    </modules>
+
+    <dependencyManagement>
+        <dependencies>
+            <dependency>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-dependencies</artifactId>
+                <version>${spring-boot.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
+
+    <build>
+        <pluginManagement>
+            <plugins>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-compiler-plugin</artifactId>
+                    <configuration>
+                        <release>21</release>
+                    </configuration>
+                </plugin>
+                <plugin>
+                    <groupId>org.springframework.boot</groupId>
+                    <artifactId>spring-boot-maven-plugin</artifactId>
+                    <version>${spring-boot.version}</version>
+                </plugin>
+            </plugins>
+        </pluginManagement>
+    </build>
+</project>

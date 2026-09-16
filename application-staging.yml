@@ -1,0 +1,27 @@
+# =============================================================================
+# application-staging.yml — activated by SPRING_PROFILES_ACTIVE=staging
+# References only — real values injected as env vars by the staging K8s
+# Deployment/Helm values, sourced from K8s Secrets.
+# =============================================================================
+
+spring:
+  datasource:
+    url: ${DB_URL}
+    username: ${DB_USERNAME}
+    password: ${DB_PASSWORD}
+
+  kafka:
+    bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS}
+
+  data:
+    redis:
+      host: ${REDIS_HOST}
+      port: ${REDIS_PORT:6379}
+
+logging:
+  level:
+    root: INFO
+    com.texora: INFO
+
+cors:
+  allowed-origins: ${STAGING_ALLOWED_ORIGINS}

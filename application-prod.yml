@@ -1,0 +1,43 @@
+# =============================================================================
+# application-prod.yml — activated by SPRING_PROFILES_ACTIVE=prod
+#
+# CRITICAL RULE: every value below is a ${PLACEHOLDER}, resolved from a
+# Kubernetes Secret (backed by the external Vault/KMS per the HLD) at pod
+# startup. If you ever see a real password, URL, or key typed directly into
+# this file, that is a security incident, not a style issue — stop and
+# fix it before merging.
+# =============================================================================
+
+spring:
+  datasource:
+    url: ${DB_URL}
+    username: ${DB_USERNAME}
+    password: ${DB_PASSWORD}
+    hikari:
+      maximum-pool-size: ${DB_POOL_SIZE:10}   # tune later with real load data, not now
+
+  kafka:
+    bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS}
+    properties:
+      security.protocol: SASL_SSL
+
+  data:
+    redis:
+      host: ${REDIS_HOST}
+      port: ${REDIS_PORT:6379}
+      password: ${REDIS_PASSWORD}
+      ssl:
+        enabled: true
+
+logging:
+  level:
+    root: WARN
+    com.texora: INFO
+
+management:
+  endpoint:
+    health:
+      show-details: never        # never leak internal health detail publicly in prod
+
+cors:
+  allowed-origins: ${PROD_ALLOWED_ORIGINS}

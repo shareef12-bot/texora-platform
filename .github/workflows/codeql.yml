@@ -1,0 +1,41 @@
+name: CodeQL (SAST)
+
+# Free static-analysis security scanning, built into GitHub — no separate
+# tool to buy, host, or maintain. Runs on PRs and weekly on main to catch
+# anything introduced outside the PR flow.
+
+on:
+  pull_request:
+    branches: [ main ]
+  push:
+    branches: [ main ]
+  schedule:
+    - cron: '0 3 * * 1'   # weekly, Monday 03:00 UTC
+
+jobs:
+  analyze:
+    runs-on: ubuntu-latest
+    permissions:
+      security-events: write
+      contents: read
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 21
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '21'
+
+      - name: Initialize CodeQL
+        uses: github/codeql-action/init@v3
+        with:
+          languages: java
+
+      - name: Build (required for Java analysis)
+        run: mvn -B -ntp -DskipTests compile
+
+      - name: Perform CodeQL Analysis
+        uses: github/codeql-action/analyze@v3

@@ -1,0 +1,47 @@
+name: CI
+
+# Runs on every PR targeting main, and on every push to main.
+# This is the status check that branch protection requires before merge.
+
+on:
+  pull_request:
+    branches: [ main ]
+  push:
+    branches: [ main ]
+
+jobs:
+  build-test-verify:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 21
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '21'
+          cache: 'maven'
+
+      - name: Build and run tests (full reactor)
+        run: mvn -B -ntp clean verify
+
+      # ---- MANDATORY LOMBOK CHECK ----
+      # Fails the build if Lombok appears anywhere in the dependency tree of
+      # any module. This is not optional per the platform's engineering standards.
+      - name: No-Lombok check
+        run: |
+          echo "Checking for Lombok in the full dependency tree..."
+          if mvn -B -ntp dependency:tree | grep -qi "lombok"; then
+            echo "::error::Lombok detected in the dependency tree. Not allowed in this codebase."
+            exit 1
+          fi
+          echo "OK: no Lombok found."
+
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-results
+          path: '**/target/surefire-reports/*.xml'
+          retention-days: 14

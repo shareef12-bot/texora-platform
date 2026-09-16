@@ -1,0 +1,19 @@
+# CODEOWNERS — auto-requests review on every PR touching these paths.
+# Replace @your-github-username with your actual GitHub handle.
+# GitHub uses the LAST matching rule, so keep the catch-all (*) at the top
+# and more specific rules below it if you ever want to delegate ownership
+# of a specific service to a developer once the team grows.
+
+# Everything, by default, requires the lead's review
+*                                   @your-github-username
+
+# Platform Foundation — the lead owns this outright, no delegation
+/01-platform-foundation/            @your-github-username
+
+# Per-service ownership can be delegated here later, e.g.:
+# /02-services/sso-service/         @developer-a-username
+# /02-services/sec-service/         @developer-a-username
+# /02-services/siem-service/        @developer-b-username
+# /02-services/ftp-service/         @developer-b-username
+# Even when delegated, the catch-all above still means the lead is ALSO
+# requested as a reviewer unless you remove the top-level "*" rule.
