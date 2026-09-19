@@ -25,6 +25,14 @@
         <module>02-services/sso-service</module>
     </modules>
 
+    <repositories>
+        <repository>
+            <id>shibboleth</id>
+            <name>Shibboleth Releases</name>
+            <url>https://build.shibboleth.net/nexus/content/repositories/releases</url>
+        </repository>
+    </repositories>
+
     <properties>
         <java.version>21</java.version>
         <maven.compiler.source>21</maven.compiler.source>
