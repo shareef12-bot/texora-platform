@@ -1,5 +1,7 @@
 package com.texora.secops.starter.domain;
 
+import com.texora.secops.starter.exception.TenantContextMissingException;
+
 import java.util.UUID;
 
 /**
