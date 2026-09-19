@@ -1,0 +1,7 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: sso-service-config
+  namespace: {{ .Values.namespace }}
+data:
+  APPLICATION_YML_NOTE: "Runtime config is supplied via env vars (see values.yaml); application.yml in the image provides safe defaults only."

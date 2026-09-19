@@ -1,0 +1,16 @@
+spring:
+  jpa:
+    hibernate:
+      ddl-auto: validate
+  flyway:
+    schemas: sso
+    locations: classpath:db/migration
+
+texora:
+  sso:
+    ldap-service:
+      stub-mode: true
+    dc-service:
+      stub-mode: true
+    sec-service:
+      base-url: http://localhost:${wiremock.server.port:9999}
