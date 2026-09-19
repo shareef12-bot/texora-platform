@@ -1,48 +1,102 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project xmlns="http://maven.apache.org/POM/4.0.0"
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0
+             https://maven.apache.org/xsd/maven-4.0.0.xsd">
+
     <modelVersion>4.0.0</modelVersion>
 
-    <groupId>com.texora</groupId>
-    <artifactId>texora-platform</artifactId>
-    <version>0.1.0-SNAPSHOT</version>
+    <groupId>com.texora.secops</groupId>
+    <artifactId>texora-secops-platform</artifactId>
+    <version>1.0.0-SNAPSHOT</version>
     <packaging>pom</packaging>
-    <name>Texora Platform (Parent)</name>
+
+    <name>Texora SecOps Platform — Foundation</name>
     <description>
-        Monorepo parent POM for the Texora platform: 8 core security control-plane
-        services, the Quality Automation Platform (QAP), and shared platform foundation
-        libraries. See 00-docs/build-plan/ for the full build plan and per-service prompts.
+        Shared foundation libraries for the Texora SecOps platform.
+        Build this before any of the eight microservices.
     </description>
 
+    <modules>
+        <module>01-platform-foundation/texora-secops-starter</module>
+        <module>01-platform-foundation/texora-iam-client</module>
+        <module>01-platform-foundation/texora-audit-sdk</module>
+        <module>01-platform-foundation/texora-sec-stub</module>
+        <module>02-services/sso-service</module>
+    </modules>
+
     <properties>
+        <java.version>21</java.version>
         <maven.compiler.source>21</maven.compiler.source>
         <maven.compiler.target>21</maven.compiler.target>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <spring-boot.version>3.3.0</spring-boot.version>
-        <!-- Pin every shared dependency version HERE, once, so every module
-             inherits the same version instead of drifting per-service. -->
+
+        <!-- Spring -->
+        <spring-boot.version>3.3.4</spring-boot.version>
+        <spring-security.version>6.3.3</spring-security.version>
+
+        <!-- OpenTelemetry -->
+        <opentelemetry-bom.version>1.41.0</opentelemetry-bom.version>
+        <micrometer-otel.version>1.13.4</micrometer-otel.version>
+
+        <!-- Kafka -->
+        <kafka.version>3.8.0</kafka.version>
+
+        <!-- Testing -->
+        <testcontainers.version>1.20.1</testcontainers.version>
+
+        <!-- Plugin versions -->
+        <maven-compiler-plugin.version>3.13.0</maven-compiler-plugin.version>
+        <maven-surefire-plugin.version>3.5.0</maven-surefire-plugin.version>
+        <spotbugs-maven-plugin.version>4.8.6.4</spotbugs-maven-plugin.version>
+        <owasp-dependency-check.version>10.0.4</owasp-dependency-check.version>
+        <cyclonedx-maven-plugin.version>2.8.0</cyclonedx-maven-plugin.version>
     </properties>
 
-    <!--
-        MODULE LIST — add one line per module as it is actually built.
-        Do NOT pre-list modules that don't exist as folders yet; an empty
-        <module> entry breaks the build. Uncomment/add as each is created.
-
-        Build order matches 00-OVERVIEW-plan-and-decisions.md Part A.1:
-          Platform Foundation first, then SSO -> SEC -> SIEM -> FTP -> DC ->
-          LDAP -> VPN -> CGI, with QAP Part A alongside Foundation and
-          QAP Part B alongside Integration.
-    -->
-    
     <dependencyManagement>
         <dependencies>
+            <!-- Spring Boot BOM -->
             <dependency>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-dependencies</artifactId>
                 <version>${spring-boot.version}</version>
                 <type>pom</type>
                 <scope>import</scope>
+            </dependency>
+
+            <!-- OpenTelemetry BOM -->
+            <dependency>
+                <groupId>io.opentelemetry</groupId>
+                <artifactId>opentelemetry-bom</artifactId>
+                <version>${opentelemetry-bom.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+
+            <!-- Testcontainers BOM -->
+            <dependency>
+                <groupId>org.testcontainers</groupId>
+                <artifactId>testcontainers-bom</artifactId>
+                <version>${testcontainers.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+
+            <!-- Intra-platform dependencies -->
+            <dependency>
+                <groupId>com.texora.secops</groupId>
+                <artifactId>texora-secops-starter</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.texora.secops</groupId>
+                <artifactId>texora-iam-client</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.texora.secops</groupId>
+                <artifactId>texora-audit-sdk</artifactId>
+                <version>${project.version}</version>
             </dependency>
         </dependencies>
     </dependencyManagement>
@@ -53,16 +107,85 @@
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-compiler-plugin</artifactId>
+                    <version>${maven-compiler-plugin.version}</version>
                     <configuration>
+                        <source>21</source>
+                        <target>21</target>
                         <release>21</release>
                     </configuration>
                 </plugin>
                 <plugin>
-                    <groupId>org.springframework.boot</groupId>
-                    <artifactId>spring-boot-maven-plugin</artifactId>
-                    <version>${spring-boot.version}</version>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-surefire-plugin</artifactId>
+                    <version>${maven-surefire-plugin.version}</version>
                 </plugin>
             </plugins>
         </pluginManagement>
+
+        <plugins>
+            <!-- HARD FAIL if Lombok is anywhere in the dependency tree -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-antrun-plugin</artifactId>
+                <version>3.1.0</version>
+                <executions>
+                    <execution>
+                        <id>lombok-check</id>
+                        <phase>validate</phase>
+                        <goals>
+                            <goal>run</goal>
+                        </goals>
+                        <configuration>
+                            <target>
+                                <exec executable="bash" failonerror="true">
+                                    <arg value="-c"/>
+                                    <arg value="if mvn dependency:tree -pl . 2>/dev/null | grep -i 'lombok'; then echo 'BUILD FAILURE: Lombok detected in dependency tree — prohibited by platform standard B.2'; exit 1; fi"/>
+                                </exec>
+                            </target>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+
+            <!-- OWASP Dependency-Check (SCA) -->
+            <plugin>
+                <groupId>org.owasp</groupId>
+                <artifactId>dependency-check-maven</artifactId>
+                <version>${owasp-dependency-check.version}</version>
+                <configuration>
+                    <failBuildOnCVSS>7</failBuildOnCVSS>
+                    <suppressionFiles>
+                        <suppressionFile>dependency-check-suppressions.xml</suppressionFile>
+                    </suppressionFiles>
+                </configuration>
+            </plugin>
+
+            <!-- CycloneDX SBOM -->
+            <plugin>
+                <groupId>org.cyclonedx</groupId>
+                <artifactId>cyclonedx-maven-plugin</artifactId>
+                <version>${cyclonedx-maven-plugin.version}</version>
+                <executions>
+                    <execution>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>makeBom</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+
+            <!-- SpotBugs SAST -->
+            <plugin>
+                <groupId>com.github.spotbugs</groupId>
+                <artifactId>spotbugs-maven-plugin</artifactId>
+                <version>${spotbugs-maven-plugin.version}</version>
+                <configuration>
+                    <effort>Max</effort>
+                    <threshold>High</threshold>
+                    <failOnError>true</failOnError>
+                </configuration>
+            </plugin>
+        </plugins>
     </build>
 </project>
