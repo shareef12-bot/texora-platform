@@ -239,7 +239,7 @@ jobs:
           cache: maven
 
       - name: Package SEC Stub JAR
-        run: mvn -B package -pl texora-sec-stub -am -DskipTests
+        run: mvn -B package -pl 01-platform-foundation/texora-sec-stub -am -DskipTests
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
