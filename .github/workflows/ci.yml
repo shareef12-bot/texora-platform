@@ -81,7 +81,7 @@ jobs:
 
       - name: Upload test results
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: test-results
           path: "**/target/surefire-reports/*.xml"
@@ -92,7 +92,7 @@ jobs:
       # resolve sibling modules (e.g. texora-secops-starter) without
       # reaching out to remote repositories that don't host them.
       - name: Share built platform artifacts with downstream jobs
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: texora-m2-artifacts
           path: ~/.m2/repository/com/texora
@@ -126,7 +126,7 @@ jobs:
 
       - name: Upload SpotBugs report
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: spotbugs-report
           path: "**/target/spotbugsXml.xml"
@@ -199,7 +199,7 @@ jobs:
 
       - name: Upload dependency-check report
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: dependency-check-report
           path: "**/target/dependency-check-report.html"
@@ -231,7 +231,7 @@ jobs:
         run: mvn -B cyclonedx:makeBom
 
       - name: Upload SBOM artifacts
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: sbom
           path: "**/target/bom*.json"
