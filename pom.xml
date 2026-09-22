@@ -80,6 +80,27 @@
                 <scope>import</scope>
             </dependency>
 
+            <!-- Explicit override: spring-boot-dependencies 3.5.16 bundles Tomcat
+                 10.1.55, which is still open to CVE-2026-65182/65905/68525.
+                 A property redeclaration does NOT override versions used
+                 inside the BOM's own placeholders, so these have to be listed
+                 here directly to actually win. -->
+            <dependency>
+                <groupId>org.apache.tomcat.embed</groupId>
+                <artifactId>tomcat-embed-core</artifactId>
+                <version>${tomcat.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.tomcat.embed</groupId>
+                <artifactId>tomcat-embed-el</artifactId>
+                <version>${tomcat.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.tomcat.embed</groupId>
+                <artifactId>tomcat-embed-websocket</artifactId>
+                <version>${tomcat.version}</version>
+            </dependency>
+
             <!-- OpenTelemetry BOM -->
             <dependency>
                 <groupId>io.opentelemetry</groupId>
