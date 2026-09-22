@@ -1,13 +1,11 @@
 package com.texora.secops.sso.tenant;
-
-import com.texora.secops.iam.TokenClaims;
-import com.texora.secops.iam.TokenValidationException;
-import com.texora.secops.iam.IamTokenClient;
+import com.texora.secops.iam.token.TokenClaims;
+import com.texora.secops.iam.token.TokenValidator;
+import com.texora.secops.starter.exception.PlatformException;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
@@ -24,24 +22,22 @@ import java.io.IOException;
  */
 public class TenantResolvingFilter extends OncePerRequestFilter {
 
-    private final IamTokenClient iamTokenClient;
+    private final TokenValidator tokenValidator;
 
-    public TenantResolvingFilter(IamTokenClient iamTokenClient) {
-        this.iamTokenClient = iamTokenClient;
+    public TenantResolvingFilter(TokenValidator tokenValidator) {
+        this.tokenValidator = tokenValidator;
     }
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response,
                                      FilterChain filterChain) throws ServletException, IOException {
         try {
-            TokenClaims claims = iamTokenClient.currentClaims(SecurityContextHolder.getContext());
-            if (claims != null && claims.tenantId() != null) {
-                TenantContext.set(claims.tenantId());
-            }
+            TokenClaims claims = tokenValidator.validate(request.getHeader("Authorization"));
+            TenantContext.set(claims.getTenantId());
             filterChain.doFilter(request, response);
-        } catch (TokenValidationException e) {
-            // Fail closed: ambiguous/missing tenant claim is a 401, never a
-            // silently-unfiltered query.
+        } catch (PlatformException.UnauthenticatedException e) {
+            // Fail closed: ambiguous/missing/invalid token means tenant is
+            // never set — 401, never a silently-unfiltered query.
             response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
         } finally {
             TenantContext.clear();

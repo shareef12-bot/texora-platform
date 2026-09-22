@@ -1,6 +1,7 @@
 package com.texora.secops.audit.config;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.texora.secops.audit.AuditSdk;
 import com.texora.secops.audit.aspect.AuditingAspect;
 import com.texora.secops.audit.kafka.AuditKafkaPublisher;
 import com.texora.secops.audit.repository.AuditEventRepository;
@@ -48,6 +49,16 @@ public class AuditAutoConfiguration {
                                                     AuditEventRepository repository,
                                                     ObjectMapper objectMapper) {
         return new AuditKafkaPublisher(kafkaTemplate, repository, objectMapper, serviceName);
+    }
+
+    /**
+     * Generic, entity-agnostic Kafka publish primitive for services that
+     * manage their own audit entity/table (e.g. sso-service) and just need
+     * a non-blocking topic/key/payload publish call. See {@link AuditSdk}.
+     */
+    @Bean
+    public AuditSdk auditSdk(KafkaTemplate<String, String> kafkaTemplate) {
+        return new AuditSdk(kafkaTemplate);
     }
 
     /**

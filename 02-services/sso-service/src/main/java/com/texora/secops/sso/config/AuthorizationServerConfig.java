@@ -1,6 +1,7 @@
 package com.texora.secops.sso.config;
 
 import com.nimbusds.jose.jwk.JWKSet;
+
 import com.nimbusds.jose.jwk.RSAKey;
 import com.nimbusds.jose.jwk.source.ImmutableJWKSet;
 import com.nimbusds.jose.jwk.source.JWKSource;
@@ -53,7 +54,7 @@ public class AuthorizationServerConfig {
     @Order(0)
     public SecurityFilterChain authorizationServerSecurityFilterChain(HttpSecurity http) throws Exception {
         OAuth2AuthorizationServerConfigurer authorizationServerConfigurer =
-                OAuth2AuthorizationServerConfigurer.authorizationServer();
+                new OAuth2AuthorizationServerConfigurer();
 
         http
             .securityMatcher(authorizationServerConfigurer.getEndpointsMatcher())

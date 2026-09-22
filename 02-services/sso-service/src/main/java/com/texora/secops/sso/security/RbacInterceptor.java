@@ -1,9 +1,10 @@
 package com.texora.secops.sso.security;
 
-import com.texora.secops.iam.IamTokenClient;
+import com.texora.secops.iam.token.TokenClaims;
+import com.texora.secops.iam.token.TokenValidator;
+import com.texora.secops.starter.exception.PlatformException;
 import com.texora.secops.sso.exception.RbacDeniedException;
 import jakarta.servlet.http.HttpServletRequest;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
 import org.springframework.web.method.HandlerMethod;
 import org.springframework.web.servlet.HandlerInterceptor;
@@ -34,12 +35,11 @@ public class RbacInterceptor implements HandlerInterceptor {
             "/api/v1/session/token-management", "sso.session.revoke",
             "/api/v1/config", "sso.config.write");
 
-    private final IamTokenClient iamTokenClient;
+    private final TokenValidator tokenValidator;
 
-    public RbacInterceptor(IamTokenClient iamTokenClient) {
-        this.iamTokenClient = iamTokenClient;
+    public RbacInterceptor(TokenValidator tokenValidator) {
+        this.tokenValidator = tokenValidator;
     }
-
     @Override
     public boolean preHandle(HttpServletRequest request, jakarta.servlet.http.HttpServletResponse response,
                               Object handler) {
@@ -56,15 +56,15 @@ public class RbacInterceptor implements HandlerInterceptor {
             return true;
         }
 
-        boolean hasRole;
+        TokenClaims claims;
         try {
-            hasRole = iamTokenClient.callerHasRole(SecurityContextHolder.getContext(), requiredRole);
-        } catch (RuntimeException e) {
-            // Fail closed: any error resolving the caller's roles is a denial.
+            claims = tokenValidator.validate(request.getHeader("Authorization"));
+        } catch (PlatformException.UnauthenticatedException e) {
+            // Fail closed: any error validating the caller's token is a denial.
             throw new RbacDeniedException("Unable to verify caller role '" + requiredRole + "'");
         }
 
-        if (!hasRole) {
+        if (!claims.hasRole(requiredRole)) {
             throw new RbacDeniedException("Caller lacks required role '" + requiredRole + "'");
         }
         return true;
