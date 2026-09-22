@@ -46,10 +46,14 @@
         <spring-security.version>6.3.3</spring-security.version>
 
         <!-- Pinned past what spring-boot-dependencies 3.5.16 bundles, to close
-             Tomcat CVEs disclosed after that release (e.g. CVE-2026-65182,
-             CVE-2026-65905, CVE-2026-68525). Re-check this against each new
-             Trivy run and raise it again if newer CVEs land. -->
-        <tomcat.version>10.1.58</tomcat.version>
+             Tomcat CVEs disclosed after that release (CVE-2026-65182,
+             CVE-2026-65905, CVE-2026-68525). NOTE: the advisories name
+             10.1.58 as the fix version, but 10.1.58 was never published to
+             Maven Central (skipped release) — resolution 404s. 10.1.59 is
+             the first published 10.1.x release that actually contains the
+             fix. Re-check this against each new Trivy run and bump again
+             if newer CVEs land. -->
+        <tomcat.version>10.1.59</tomcat.version>
 
         <!-- OpenTelemetry -->
         <opentelemetry-bom.version>1.41.0</opentelemetry-bom.version>
@@ -81,10 +85,11 @@
             </dependency>
 
             <!-- Explicit override: spring-boot-dependencies 3.5.16 bundles Tomcat
-                 10.1.55, which is still open to CVE-2026-65182/65905/68525.
-                 A property redeclaration does NOT override versions used
-                 inside the BOM's own placeholders, so these have to be listed
-                 here directly to actually win. -->
+                 10.1.55, which is still open to CVE-2026-65182/65905/68525
+                 (both are open through 10.1.57 per the NVD records — 10.1.58
+                 is not a real artifact). A property redeclaration does NOT
+                 override versions used inside the BOM's own placeholders, so
+                 these have to be listed here directly to actually win. -->
             <dependency>
                 <groupId>org.apache.tomcat.embed</groupId>
                 <artifactId>tomcat-embed-core</artifactId>
