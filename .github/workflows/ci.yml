@@ -247,8 +247,8 @@ jobs:
       - name: Build container image (non-root, SEC stub)
         uses: docker/build-push-action@v5
         with:
-          context: texora-sec-stub
-          file: texora-sec-stub/Dockerfile
+          context: 01-platform-foundation/texora-sec-stub
+          file: 01-platform-foundation/texora-sec-stub/Dockerfile
           push: false
           tags: texora-sec-stub:${{ github.sha }}
           load: true
@@ -274,8 +274,8 @@ jobs:
         if: github.ref == 'refs/heads/main'
         uses: docker/build-push-action@v5
         with:
-          context: texora-sec-stub
-          file: texora-sec-stub/Dockerfile
+          context: 01-platform-foundation/texora-sec-stub
+          file: 01-platform-foundation/texora-sec-stub/Dockerfile
           push: true
           tags: |
             ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}/texora-sec-stub:latest
