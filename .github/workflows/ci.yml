@@ -171,11 +171,30 @@ jobs:
           name: texora-m2-artifacts
           path: ~/.m2/repository/com/texora
 
+      - name: Set date for cache key
+        id: date
+        run: echo "today=$(date +%Y-%m-%d)" >> "$GITHUB_OUTPUT"
+
+      # NVD DB is ~396k records. Without this cache, every run re-downloads
+      # the whole thing from scratch. With it, only the delta since the last
+      # cache hit gets pulled (a few seconds). Key rotates daily so the DB
+      # still refreshes; restore-keys falls back to the most recent cache
+      # available if today's exact key hasn't been written yet.
+      - name: Cache NVD vulnerability database
+        uses: actions/cache@v4
+        with:
+          path: ~/.dependency-check-data
+          key: nvd-db-${{ runner.os }}-${{ steps.date.outputs.today }}
+          restore-keys: |
+            nvd-db-${{ runner.os }}-
+
       - name: Run OWASP Dependency-Check (fail on CVSS ≥ 7)
         run: |
           mvn -B dependency-check:check \
             -DfailBuildOnCVSS=7 \
-            -DsuppressionsLocation=dependency-check-suppressions.xml || true
+            -DsuppressionsLocation=dependency-check-suppressions.xml \
+            -DdataDirectory=$HOME/.dependency-check-data \
+            -DnvdApiKey=${{ secrets.NVD_API_KEY }} || true
         # Set to || true in CI — adjust to exit 1 once baseline is clean
 
       - name: Upload dependency-check report
