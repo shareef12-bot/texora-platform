@@ -1,0 +1,563 @@
+[INFO] Scanning for projects...
+[WARNING] 
+[WARNING] Some problems were encountered while building the effective model for com.texora.secops:sso-service:jar:1.0.0-SNAPSHOT
+[WARNING] 'build.plugins.plugin.version' for org.springframework.boot:spring-boot-maven-plugin is missing. @ line 171, column 15
+[WARNING] 'build.plugins.plugin.version' for org.apache.maven.plugins:maven-enforcer-plugin is missing. @ line 176, column 15
+[WARNING] 
+[WARNING] It is highly recommended to fix these problems because they threaten the stability of your build.
+[WARNING] 
+[WARNING] For this reason, future Maven versions might no longer support building such malformed projects.
+[WARNING] 
+[INFO] ------------------------------------------------------------------------
+[INFO] Reactor Build Order:
+[INFO] 
+[INFO] Texora SecOps Platform — Foundation                                [pom]
+[INFO] Texora SecOps — Shared Spring Boot Starter                         [jar]
+[INFO] Texora SecOps — IAM Client Library                                 [jar]
+[INFO] Texora SecOps — Audit SDK                                          [jar]
+[INFO] Texora SecOps — SEC API Contract Stub                              [jar]
+[INFO] SSO / IAM Service                                                  [jar]
+[INFO] 
+[INFO] --------------< com.texora.secops:texora-secops-platform >--------------
+[INFO] Building Texora SecOps Platform — Foundation 1.0.0-SNAPSHOT        [1/6]
+[INFO]   from pom.xml
+[INFO] --------------------------------[ pom ]---------------------------------
+[INFO] 
+[INFO] --- clean:3.2.0:clean (default-clean) @ texora-secops-platform ---
+[INFO] Deleting C:\Users\SK SHAREEF\OneDrive\Desktop\TexoraSecOps\target
+[INFO] 
+[INFO] --- antrun:3.1.0:run (lombok-check) @ texora-secops-platform ---
+[INFO] Executing tasks
+[INFO] Executed tasks
+[INFO] 
+[INFO] --------------< com.texora.secops:texora-secops-starter >---------------
+[INFO] Building Texora SecOps — Shared Spring Boot Starter 1.0.0-SNAPSHOT [2/6]
+[INFO]   from 01-platform-foundation\texora-secops-starter\pom.xml
+[INFO] --------------------------------[ jar ]---------------------------------
+[INFO] 
+[INFO] --- clean:3.2.0:clean (default-clean) @ texora-secops-starter ---
+[INFO] Deleting C:\Users\SK SHAREEF\OneDrive\Desktop\TexoraSecOps\01-platform-foundation\texora-secops-starter\target
+[INFO] 
+[INFO] --- antrun:3.1.0:run (lombok-check) @ texora-secops-starter ---
+[INFO] Executing tasks
+[INFO] Executed tasks
+[INFO] 
+[INFO] --- resources:3.3.1:resources (default-resources) @ texora-secops-starter ---
+[INFO] Copying 1 resource from src\main\resources to target\classes
+[INFO] 
+[INFO] --- compiler:3.13.0:compile (default-compile) @ texora-secops-starter ---
+[INFO] Recompiling the module because of changed source code.
+[INFO] Compiling 11 source files with javac [debug release 21] to target\classes
+[INFO] Annotation processing is enabled because one or more processors were found
+  on the class path. A future release of javac may disable annotation processing
+  unless at least one processor is specified by name (-processor), or a search
+  path is specified (--processor-path, --processor-module-path), or annotation
+  processing is enabled explicitly (-proc:only, -proc:full).
+  Use -Xlint:-options to suppress this message.
+  Use -proc:none to disable annotation processing.
+[INFO] 
+[INFO] --- resources:3.3.1:testResources (default-testResources) @ texora-secops-starter ---
+[INFO] skip non existing resourceDirectory C:\Users\SK SHAREEF\OneDrive\Desktop\TexoraSecOps\01-platform-foundation\texora-secops-starter\src\test\resources
+[INFO] 
+[INFO] --- compiler:3.13.0:testCompile (default-testCompile) @ texora-secops-starter ---
+[INFO] Recompiling the module because of changed dependency.
+[INFO] Compiling 2 source files with javac [debug release 21] to target\test-classes
+[INFO] Annotation processing is enabled because one or more processors were found
+  on the class path. A future release of javac may disable annotation processing
+  unless at least one processor is specified by name (-processor), or a search
+  path is specified (--processor-path, --processor-module-path), or annotation
+  processing is enabled explicitly (-proc:only, -proc:full).
+  Use -Xlint:-options to suppress this message.
+  Use -proc:none to disable annotation processing.
+[INFO] 
+[INFO] --- surefire:3.5.0:test (default-test) @ texora-secops-starter ---
+[INFO] Using auto detected provider org.apache.maven.surefire.junitplatform.JUnitPlatformProvider
+[INFO] 
+[INFO] -------------------------------------------------------
+[INFO]  T E S T S
+[INFO] -------------------------------------------------------
+[INFO] Running com.texora.secops.starter.domain.TenantContextTest
+[INFO] Tests run: 6, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.084 s -- in com.texora.secops.starter.domain.TenantContextTest
+[INFO] Running com.texora.secops.starter.exception.GlobalExceptionHandlerTest
+
+  .   ____          _            __ _ _
+ /\\ / ___'_ __ _ _(_)_ __  __ _ \ \ \ \
+( ( )\___ | '_ | '_| | '_ \/ _` | \ \ \ \
+ \\/  ___)| |_)| | | | | || (_| |  ) ) ) )
+  '  |____| .__|_| |_|_| |_\__, | / / / /
+ =========|_|==============|___/=/_/_/_/
+
+ :: Spring Boot ::                (v3.3.4)
+
+2026-09-22T13:13:14.404+05:30  INFO 13316 --- [           main] [                                                 ] c.t.s.s.e.GlobalExceptionHandlerTest     : Starting GlobalExceptionHandlerTest using Java 21.0.12.1 with PID 13316 (started by SK SHAREEF in C:\Users\SK SHAREEF\OneDrive\Desktop\TexoraSecOps\01-platform-foundation\texora-secops-starter)
+2026-09-22T13:13:14.409+05:30  INFO 13316 --- [           main] [                                                 ] c.t.s.s.e.GlobalExceptionHandlerTest     : No active profile set, falling back to 1 default profile: "default"
+2026-09-22T13:13:15.444+05:30  INFO 13316 --- [           main] [                                                 ] o.s.b.t.m.w.SpringBootMockServletContext : Initializing Spring TestDispatcherServlet ''
+2026-09-22T13:13:15.445+05:30  INFO 13316 --- [           main] [                                                 ] o.s.t.web.servlet.TestDispatcherServlet  : Initializing Servlet ''
+2026-09-22T13:13:15.447+05:30  INFO 13316 --- [           main] [                                                 ] o.s.t.web.servlet.TestDispatcherServlet  : Completed initialization in 1 ms
+2026-09-22T13:13:15.468+05:30  INFO 13316 --- [           main] [                                                 ] c.t.s.s.e.GlobalExceptionHandlerTest     : Started GlobalExceptionHandlerTest in 1.394 seconds (process running for 2.42)
+WARNING: A Java agent has been loaded dynamically (C:\Users\SK SHAREEF\.m2\repository\net\bytebuddy\byte-buddy-agent\1.14.19\byte-buddy-agent-1.14.19.jar)
+WARNING: If a serviceability tool is in use, please run with -XX:+EnableDynamicAgentLoading to hide this warning
+WARNING: If a serviceability tool is not in use, please run with -Djdk.instrument.traceUsage for more information
+WARNING: Dynamic loading of agents will be disallowed by default in a future release
+Java HotSpot(TM) 64-Bit Server VM warning: Sharing is only supported for boot loader classes because bootstrap classpath has been appended
+2026-09-22T13:13:16.295+05:30 ERROR 13316 --- [           main] [                                                 ] c.t.s.s.e.GlobalExceptionHandler         : Unexpected error [traceId=unavailable] on GET /test/unexpected: Something exploded internally
+
+java.lang.RuntimeException: Something exploded internally
+	at com.texora.secops.starter.exception.GlobalExceptionHandlerTest$TestController.unexpected(GlobalExceptionHandlerTest.java:61) ~[test-classes/:na]
+	at java.base/jdk.internal.reflect.DirectMethodHandleAccessor.invoke(DirectMethodHandleAccessor.java:103) ~[na:na]
+	at java.base/java.lang.reflect.Method.invoke(Method.java:580) ~[na:na]
+	at org.springframework.web.method.support.InvocableHandlerMethod.doInvoke(InvocableHandlerMethod.java:255) ~[spring-web-6.1.13.jar:6.1.13]
+	at org.springframework.web.method.support.InvocableHandlerMethod.invokeForRequest(InvocableHandlerMethod.java:188) ~[spring-web-6.1.13.jar:6.1.13]
+	at org.springframework.web.servlet.mvc.method.annotation.ServletInvocableHandlerMethod.invokeAndHandle(ServletInvocableHandlerMethod.java:118) ~[spring-webmvc-6.1.13.jar:6.1.13]
+	at org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerAdapter.invokeHandlerMethod(RequestMappingHandlerAdapter.java:926) ~[spring-webmvc-6.1.13.jar:6.1.13]
+	at org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerAdapter.handleInternal(RequestMappingHandlerAdapter.java:831) ~[spring-webmvc-6.1.13.jar:6.1.13]
+	at org.springframework.web.servlet.mvc.method.AbstractHandlerMethodAdapter.handle(AbstractHandlerMethodAdapter.java:87) ~[spring-webmvc-6.1.13.jar:6.1.13]
+	at org.springframework.web.servlet.DispatcherServlet.doDispatch(DispatcherServlet.java:1089) ~[spring-webmvc-6.1.13.jar:6.1.13]
+	at org.springframework.web.servlet.DispatcherServlet.doService(DispatcherServlet.java:979) ~[spring-webmvc-6.1.13.jar:6.1.13]
+	at org.springframework.web.servlet.FrameworkServlet.processRequest(FrameworkServlet.java:1014) ~[spring-webmvc-6.1.13.jar:6.1.13]
+	at org.springframework.web.servlet.FrameworkServlet.doGet(FrameworkServlet.java:903) ~[spring-webmvc-6.1.13.jar:6.1.13]
+	at jakarta.servlet.http.HttpServlet.service(HttpServlet.java:564) ~[tomcat-embed-core-10.1.30.jar:6.0]
+	at org.springframework.web.servlet.FrameworkServlet.service(FrameworkServlet.java:885) ~[spring-webmvc-6.1.13.jar:6.1.13]
+	at org.springframework.test.web.servlet.TestDispatcherServlet.service(TestDispatcherServlet.java:72) ~[spring-test-6.1.13.jar:6.1.13]
+	at jakarta.servlet.http.HttpServlet.service(HttpServlet.java:658) ~[tomcat-embed-core-10.1.30.jar:6.0]
+	at org.springframework.mock.web.MockFilterChain$ServletFilterProxy.doFilter(MockFilterChain.java:165) ~[spring-test-6.1.13.jar:6.1.13]
+	at org.springframework.mock.web.MockFilterChain.doFilter(MockFilterChain.java:132) ~[spring-test-6.1.13.jar:6.1.13]
+	at org.springframework.web.filter.RequestContextFilter.doFilterInternal(RequestContextFilter.java:100) ~[spring-web-6.1.13.jar:6.1.13]
+	at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:116) ~[spring-web-6.1.13.jar:6.1.13]
+	at org.springframework.test.web.servlet.setup.MockMvcFilterDecorator.doFilter(MockMvcFilterDecorator.java:151) ~[spring-test-6.1.13.jar:6.1.13]
+	at org.springframework.mock.web.MockFilterChain.doFilter(MockFilterChain.java:132) ~[spring-test-6.1.13.jar:6.1.13]
+	at org.springframework.web.filter.FormContentFilter.doFilterInternal(FormContentFilter.java:93) ~[spring-web-6.1.13.jar:6.1.13]
+	at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:116) ~[spring-web-6.1.13.jar:6.1.13]
+	at org.springframework.test.web.servlet.setup.MockMvcFilterDecorator.doFilter(MockMvcFilterDecorator.java:151) ~[spring-test-6.1.13.jar:6.1.13]
+	at org.springframework.mock.web.MockFilterChain.doFilter(MockFilterChain.java:132) ~[spring-test-6.1.13.jar:6.1.13]
+	at org.springframework.web.filter.CharacterEncodingFilter.doFilterInternal(CharacterEncodingFilter.java:201) ~[spring-web-6.1.13.jar:6.1.13]
+	at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:116) ~[spring-web-6.1.13.jar:6.1.13]
+	at org.springframework.test.web.servlet.setup.MockMvcFilterDecorator.doFilter(MockMvcFilterDecorator.java:151) ~[spring-test-6.1.13.jar:6.1.13]
+	at org.springframework.mock.web.MockFilterChain.doFilter(MockFilterChain.java:132) ~[spring-test-6.1.13.jar:6.1.13]
+	at org.springframework.test.web.servlet.MockMvc.perform(MockMvc.java:201) ~[spring-test-6.1.13.jar:6.1.13]
+	at com.texora.secops.starter.exception.GlobalExceptionHandlerTest.unexpected_exception_returns_500_with_no_internal_detail(GlobalExceptionHandlerTest.java:116) ~[test-classes/:na]
+	at java.base/jdk.internal.reflect.DirectMethodHandleAccessor.invoke(DirectMethodHandleAccessor.java:103) ~[na:na]
+	at java.base/java.lang.reflect.Method.invoke(Method.java:580) ~[na:na]
+	at org.junit.platform.commons.util.ReflectionUtils.invokeMethod(ReflectionUtils.java:728) ~[junit-platform-commons-1.10.3.jar:1.10.3]
+	at org.junit.jupiter.engine.execution.MethodInvocation.proceed(MethodInvocation.java:60) ~[junit-jupiter-engine-5.10.3.jar:5.10.3]
+	at org.junit.jupiter.engine.execution.InvocationInterceptorChain$ValidatingInvocation.proceed(InvocationInterceptorChain.java:131) ~[junit-jupiter-engine-5.10.3.jar:5.10.3]
+	at org.junit.jupiter.engine.extension.TimeoutExtension.intercept(TimeoutExtension.java:156) ~[junit-jupiter-engine-5.10.3.jar:5.10.3]
+	at org.junit.jupiter.engine.extension.TimeoutExtension.interceptTestableMethod(TimeoutExtension.java:147) ~[junit-jupiter-engine-5.10.3.jar:5.10.3]
+	at org.junit.jupiter.engine.extension.TimeoutExtension.interceptTestMethod(TimeoutExtension.java:86) ~[junit-jupiter-engine-5.10.3.jar:5.10.3]
+	at org.junit.jupiter.engine.execution.InterceptingExecutableInvoker$ReflectiveInterceptorCall.lambda$ofVoidMethod$0(InterceptingExecutableInvoker.java:103) ~[junit-jupiter-engine-5.10.3.jar:5.10.3]
+	at org.junit.jupiter.engine.execution.InterceptingExecutableInvoker.lambda$invoke$0(InterceptingExecutableInvoker.java:93) ~[junit-jupiter-engine-5.10.3.jar:5.10.3]
+	at org.junit.jupiter.engine.execution.InvocationInterceptorChain$InterceptedInvocation.proceed(InvocationInterceptorChain.java:106) ~[junit-jupiter-engine-5.10.3.jar:5.10.3]
+	at org.junit.jupiter.engine.execution.InvocationInterceptorChain.proceed(InvocationInterceptorChain.java:64) ~[junit-jupiter-engine-5.10.3.jar:5.10.3]
+	at org.junit.jupiter.engine.execution.InvocationInterceptorChain.chainAndInvoke(InvocationInterceptorChain.java:45) ~[junit-jupiter-engine-5.10.3.jar:5.10.3]
+	at org.junit.jupiter.engine.execution.InvocationInterceptorChain.invoke(InvocationInterceptorChain.java:37) ~[junit-jupiter-engine-5.10.3.jar:5.10.3]
+	at org.junit.jupiter.engine.execution.InterceptingExecutableInvoker.invoke(InterceptingExecutableInvoker.java:92) ~[junit-jupiter-engine-5.10.3.jar:5.10.3]
+	at org.junit.jupiter.engine.execution.InterceptingExecutableInvoker.invoke(InterceptingExecutableInvoker.java:86) ~[junit-jupiter-engine-5.10.3.jar:5.10.3]
+	at org.junit.jupiter.engine.descriptor.TestMethodTestDescriptor.lambda$invokeTestMethod$7(TestMethodTestDescriptor.java:218) ~[junit-jupiter-engine-5.10.3.jar:5.10.3]
+	at org.junit.platform.engine.support.hierarchical.ThrowableCollector.execute(ThrowableCollector.java:73) ~[junit-platform-engine-1.10.3.jar:1.10.3]
+	at org.junit.jupiter.engine.descriptor.TestMethodTestDescriptor.invokeTestMethod(TestMethodTestDescriptor.java:214) ~[junit-jupiter-engine-5.10.3.jar:5.10.3]
+	at org.junit.jupiter.engine.descriptor.TestMethodTestDescriptor.execute(TestMethodTestDescriptor.java:139) ~[junit-jupiter-engine-5.10.3.jar:5.10.3]
+	at org.junit.jupiter.engine.descriptor.TestMethodTestDescriptor.execute(TestMethodTestDescriptor.java:69) ~[junit-jupiter-engine-5.10.3.jar:5.10.3]
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.lambda$executeRecursively$6(NodeTestTask.java:151) ~[junit-platform-engine-1.10.3.jar:1.10.3]
+	at org.junit.platform.engine.support.hierarchical.ThrowableCollector.execute(ThrowableCollector.java:73) ~[junit-platform-engine-1.10.3.jar:1.10.3]
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.lambda$executeRecursively$8(NodeTestTask.java:141) ~[junit-platform-engine-1.10.3.jar:1.10.3]
+	at org.junit.platform.engine.support.hierarchical.Node.around(Node.java:137) ~[junit-platform-engine-1.10.3.jar:1.10.3]
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.lambda$executeRecursively$9(NodeTestTask.java:139) ~[junit-platform-engine-1.10.3.jar:1.10.3]
+	at org.junit.platform.engine.support.hierarchical.ThrowableCollector.execute(ThrowableCollector.java:73) ~[junit-platform-engine-1.10.3.jar:1.10.3]
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.executeRecursively(NodeTestTask.java:138) ~[junit-platform-engine-1.10.3.jar:1.10.3]
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.execute(NodeTestTask.java:95) ~[junit-platform-engine-1.10.3.jar:1.10.3]
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1596) ~[na:na]
+	at org.junit.platform.engine.support.hierarchical.SameThreadHierarchicalTestExecutorService.invokeAll(SameThreadHierarchicalTestExecutorService.java:41) ~[junit-platform-engine-1.10.3.jar:1.10.3]
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.lambda$executeRecursively$6(NodeTestTask.java:155) ~[junit-platform-engine-1.10.3.jar:1.10.3]
+	at org.junit.platform.engine.support.hierarchical.ThrowableCollector.execute(ThrowableCollector.java:73) ~[junit-platform-engine-1.10.3.jar:1.10.3]
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.lambda$executeRecursively$8(NodeTestTask.java:141) ~[junit-platform-engine-1.10.3.jar:1.10.3]
+	at org.junit.platform.engine.support.hierarchical.Node.around(Node.java:137) ~[junit-platform-engine-1.10.3.jar:1.10.3]
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.lambda$executeRecursively$9(NodeTestTask.java:139) ~[junit-platform-engine-1.10.3.jar:1.10.3]
+	at org.junit.platform.engine.support.hierarchical.ThrowableCollector.execute(ThrowableCollector.java:73) ~[junit-platform-engine-1.10.3.jar:1.10.3]
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.executeRecursively(NodeTestTask.java:138) ~[junit-platform-engine-1.10.3.jar:1.10.3]
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.execute(NodeTestTask.java:95) ~[junit-platform-engine-1.10.3.jar:1.10.3]
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1596) ~[na:na]
+	at org.junit.platform.engine.support.hierarchical.SameThreadHierarchicalTestExecutorService.invokeAll(SameThreadHierarchicalTestExecutorService.java:41) ~[junit-platform-engine-1.10.3.jar:1.10.3]
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.lambda$executeRecursively$6(NodeTestTask.java:155) ~[junit-platform-engine-1.10.3.jar:1.10.3]
+	at org.junit.platform.engine.support.hierarchical.ThrowableCollector.execute(ThrowableCollector.java:73) ~[junit-platform-engine-1.10.3.jar:1.10.3]
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.lambda$executeRecursively$8(NodeTestTask.java:141) ~[junit-platform-engine-1.10.3.jar:1.10.3]
+	at org.junit.platform.engine.support.hierarchical.Node.around(Node.java:137) ~[junit-platform-engine-1.10.3.jar:1.10.3]
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.lambda$executeRecursively$9(NodeTestTask.java:139) ~[junit-platform-engine-1.10.3.jar:1.10.3]
+	at org.junit.platform.engine.support.hierarchical.ThrowableCollector.execute(ThrowableCollector.java:73) ~[junit-platform-engine-1.10.3.jar:1.10.3]
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.executeRecursively(NodeTestTask.java:138) ~[junit-platform-engine-1.10.3.jar:1.10.3]
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.execute(NodeTestTask.java:95) ~[junit-platform-engine-1.10.3.jar:1.10.3]
+	at org.junit.platform.engine.support.hierarchical.SameThreadHierarchicalTestExecutorService.submit(SameThreadHierarchicalTestExecutorService.java:35) ~[junit-platform-engine-1.10.3.jar:1.10.3]
+	at org.junit.platform.engine.support.hierarchical.HierarchicalTestExecutor.execute(HierarchicalTestExecutor.java:57) ~[junit-platform-engine-1.10.3.jar:1.10.3]
+	at org.junit.platform.engine.support.hierarchical.HierarchicalTestEngine.execute(HierarchicalTestEngine.java:54) ~[junit-platform-engine-1.10.3.jar:1.10.3]
+	at org.junit.platform.launcher.core.EngineExecutionOrchestrator.execute(EngineExecutionOrchestrator.java:198) ~[junit-platform-launcher-1.10.3.jar:1.10.3]
+	at org.junit.platform.launcher.core.EngineExecutionOrchestrator.execute(EngineExecutionOrchestrator.java:169) ~[junit-platform-launcher-1.10.3.jar:1.10.3]
+	at org.junit.platform.launcher.core.EngineExecutionOrchestrator.execute(EngineExecutionOrchestrator.java:93) ~[junit-platform-launcher-1.10.3.jar:1.10.3]
+	at org.junit.platform.launcher.core.EngineExecutionOrchestrator.lambda$execute$0(EngineExecutionOrchestrator.java:58) ~[junit-platform-launcher-1.10.3.jar:1.10.3]
+	at org.junit.platform.launcher.core.EngineExecutionOrchestrator.withInterceptedStreams(EngineExecutionOrchestrator.java:141) ~[junit-platform-launcher-1.10.3.jar:1.10.3]
+	at org.junit.platform.launcher.core.EngineExecutionOrchestrator.execute(EngineExecutionOrchestrator.java:57) ~[junit-platform-launcher-1.10.3.jar:1.10.3]
+	at org.junit.platform.launcher.core.DefaultLauncher.execute(DefaultLauncher.java:103) ~[junit-platform-launcher-1.10.3.jar:1.10.3]
+	at org.junit.platform.launcher.core.DefaultLauncher.execute(DefaultLauncher.java:85) ~[junit-platform-launcher-1.10.3.jar:1.10.3]
+	at org.junit.platform.launcher.core.DelegatingLauncher.execute(DelegatingLauncher.java:47) ~[junit-platform-launcher-1.10.3.jar:1.10.3]
+	at org.apache.maven.surefire.junitplatform.LazyLauncher.execute(LazyLauncher.java:56) ~[surefire-junit-platform-3.5.0.jar:3.5.0]
+	at org.apache.maven.surefire.junitplatform.JUnitPlatformProvider.execute(JUnitPlatformProvider.java:184) ~[surefire-junit-platform-3.5.0.jar:3.5.0]
+	at org.apache.maven.surefire.junitplatform.JUnitPlatformProvider.invokeAllTests(JUnitPlatformProvider.java:148) ~[surefire-junit-platform-3.5.0.jar:3.5.0]
+	at org.apache.maven.surefire.junitplatform.JUnitPlatformProvider.invoke(JUnitPlatformProvider.java:122) ~[surefire-junit-platform-3.5.0.jar:3.5.0]
+	at org.apache.maven.surefire.booter.ForkedBooter.runSuitesInProcess(ForkedBooter.java:385) ~[surefire-booter-3.5.0.jar:3.5.0]
+	at org.apache.maven.surefire.booter.ForkedBooter.execute(ForkedBooter.java:162) ~[surefire-booter-3.5.0.jar:3.5.0]
+	at org.apache.maven.surefire.booter.ForkedBooter.run(ForkedBooter.java:507) ~[surefire-booter-3.5.0.jar:3.5.0]
+	at org.apache.maven.surefire.booter.ForkedBooter.main(ForkedBooter.java:495) ~[surefire-booter-3.5.0.jar:3.5.0]
+
+[INFO] Tests run: 7, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 2.573 s -- in com.texora.secops.starter.exception.GlobalExceptionHandlerTest
+[INFO] 
+[INFO] Results:
+[INFO] 
+[INFO] Tests run: 13, Failures: 0, Errors: 0, Skipped: 0
+[INFO] 
+[INFO] 
+[INFO] ----------------< com.texora.secops:texora-iam-client >-----------------
+[INFO] Building Texora SecOps — IAM Client Library 1.0.0-SNAPSHOT         [3/6]
+[INFO]   from 01-platform-foundation\texora-iam-client\pom.xml
+[INFO] --------------------------------[ jar ]---------------------------------
+[INFO] 
+[INFO] --- clean:3.2.0:clean (default-clean) @ texora-iam-client ---
+[INFO] Deleting C:\Users\SK SHAREEF\OneDrive\Desktop\TexoraSecOps\01-platform-foundation\texora-iam-client\target
+[INFO] 
+[INFO] --- antrun:3.1.0:run (lombok-check) @ texora-iam-client ---
+[INFO] Executing tasks
+[INFO] Executed tasks
+[INFO] 
+[INFO] --- resources:3.3.1:resources (default-resources) @ texora-iam-client ---
+[INFO] Copying 1 resource from src\main\resources to target\classes
+[INFO] 
+[INFO] --- compiler:3.13.0:compile (default-compile) @ texora-iam-client ---
+[INFO] Recompiling the module because of changed dependency.
+[INFO] Compiling 9 source files with javac [debug release 21] to target\classes
+[INFO] Annotation processing is enabled because one or more processors were found
+  on the class path. A future release of javac may disable annotation processing
+  unless at least one processor is specified by name (-processor), or a search
+  path is specified (--processor-path, --processor-module-path), or annotation
+  processing is enabled explicitly (-proc:only, -proc:full).
+  Use -Xlint:-options to suppress this message.
+  Use -proc:none to disable annotation processing.
+[INFO] 
+[INFO] --- resources:3.3.1:testResources (default-testResources) @ texora-iam-client ---
+[INFO] skip non existing resourceDirectory C:\Users\SK SHAREEF\OneDrive\Desktop\TexoraSecOps\01-platform-foundation\texora-iam-client\src\test\resources
+[INFO] 
+[INFO] --- compiler:3.13.0:testCompile (default-testCompile) @ texora-iam-client ---
+[INFO] Recompiling the module because of changed dependency.
+[INFO] Compiling 2 source files with javac [debug release 21] to target\test-classes
+[INFO] Annotation processing is enabled because one or more processors were found
+  on the class path. A future release of javac may disable annotation processing
+  unless at least one processor is specified by name (-processor), or a search
+  path is specified (--processor-path, --processor-module-path), or annotation
+  processing is enabled explicitly (-proc:only, -proc:full).
+  Use -Xlint:-options to suppress this message.
+  Use -proc:none to disable annotation processing.
+[INFO] 
+[INFO] --- surefire:3.5.0:test (default-test) @ texora-iam-client ---
+[INFO] Using auto detected provider org.apache.maven.surefire.junitplatform.JUnitPlatformProvider
+[INFO] 
+[INFO] -------------------------------------------------------
+[INFO]  T E S T S
+[INFO] -------------------------------------------------------
+[INFO] Running com.texora.secops.iam.interceptor.RbacInterceptorTest
+WARNING: A Java agent has been loaded dynamically (C:\Users\SK SHAREEF\.m2\repository\net\bytebuddy\byte-buddy-agent\1.14.19\byte-buddy-agent-1.14.19.jar)
+WARNING: If a serviceability tool is in use, please run with -XX:+EnableDynamicAgentLoading to hide this warning
+WARNING: If a serviceability tool is not in use, please run with -Djdk.instrument.traceUsage for more information
+WARNING: Dynamic loading of agents will be disallowed by default in a future release
+Java HotSpot(TM) 64-Bit Server VM warning: Sharing is only supported for boot loader classes because bootstrap classpath has been appended
+13:13:19.537 [main] WARN com.texora.secops.iam.interceptor.RbacInterceptor -- RBAC denied: subject=311fec3e-680a-4d74-a711-3e475ff12ffb tenant=38510b84-2a9e-4add-8d86-0099600ab6de required=[ADMIN] actual=[USER_READ] uri=
+[INFO] Tests run: 7, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 1.000 s -- in com.texora.secops.iam.interceptor.RbacInterceptorTest
+[INFO] Running com.texora.secops.iam.token.TokenValidatorTest
+13:13:19.626 [main] WARN com.texora.secops.iam.token.TokenValidator -- JWT missing required claim 'ten' — failing closed
+13:13:19.652 [main] WARN com.texora.secops.iam.token.TokenValidator -- JWT claim 'ten' is not a valid UUID: 'not-a-uuid' — failing closed
+[INFO] Tests run: 8, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.108 s -- in com.texora.secops.iam.token.TokenValidatorTest
+[INFO] 
+[INFO] Results:
+[INFO] 
+[INFO] Tests run: 15, Failures: 0, Errors: 0, Skipped: 0
+[INFO] 
+[INFO] 
+[INFO] -----------------< com.texora.secops:texora-audit-sdk >-----------------
+[INFO] Building Texora SecOps — Audit SDK 1.0.0-SNAPSHOT                  [4/6]
+[INFO]   from 01-platform-foundation\texora-audit-sdk\pom.xml
+[INFO] --------------------------------[ jar ]---------------------------------
+[INFO] 
+[INFO] --- clean:3.2.0:clean (default-clean) @ texora-audit-sdk ---
+[INFO] Deleting C:\Users\SK SHAREEF\OneDrive\Desktop\TexoraSecOps\01-platform-foundation\texora-audit-sdk\target
+[INFO] 
+[INFO] --- antrun:3.1.0:run (lombok-check) @ texora-audit-sdk ---
+[INFO] Executing tasks
+[INFO] Executed tasks
+[INFO] 
+[INFO] --- resources:3.3.1:resources (default-resources) @ texora-audit-sdk ---
+[INFO] Copying 2 resources from src\main\resources to target\classes
+[INFO] 
+[INFO] --- compiler:3.13.0:compile (default-compile) @ texora-audit-sdk ---
+[INFO] Recompiling the module because of changed dependency.
+[INFO] Compiling 7 source files with javac [debug release 21] to target\classes
+[INFO] Annotation processing is enabled because one or more processors were found
+  on the class path. A future release of javac may disable annotation processing
+  unless at least one processor is specified by name (-processor), or a search
+  path is specified (--processor-path, --processor-module-path), or annotation
+  processing is enabled explicitly (-proc:only, -proc:full).
+  Use -Xlint:-options to suppress this message.
+  Use -proc:none to disable annotation processing.
+[INFO] 
+[INFO] --- resources:3.3.1:testResources (default-testResources) @ texora-audit-sdk ---
+[INFO] skip non existing resourceDirectory C:\Users\SK SHAREEF\OneDrive\Desktop\TexoraSecOps\01-platform-foundation\texora-audit-sdk\src\test\resources
+[INFO] 
+[INFO] --- compiler:3.13.0:testCompile (default-testCompile) @ texora-audit-sdk ---
+[INFO] Recompiling the module because of changed dependency.
+[INFO] Compiling 2 source files with javac [debug release 21] to target\test-classes
+[INFO] Annotation processing is enabled because one or more processors were found
+  on the class path. A future release of javac may disable annotation processing
+  unless at least one processor is specified by name (-processor), or a search
+  path is specified (--processor-path, --processor-module-path), or annotation
+  processing is enabled explicitly (-proc:only, -proc:full).
+  Use -Xlint:-options to suppress this message.
+  Use -proc:none to disable annotation processing.
+[INFO] 
+[INFO] --- surefire:3.5.0:test (default-test) @ texora-audit-sdk ---
+[INFO] Using auto detected provider org.apache.maven.surefire.junitplatform.JUnitPlatformProvider
+[INFO] 
+[INFO] -------------------------------------------------------
+[INFO]  T E S T S
+[INFO] -------------------------------------------------------
+Sept 22, 2026 1:13:21 PM org.junit.platform.launcher.core.LauncherConfigurationParameters loadClasspathResource
+WARNING: Discovered 2 'junit-platform.properties' configuration files in the classpath; only the first will be used.
+Sept 22, 2026 1:13:21 PM org.junit.platform.launcher.core.LauncherConfigurationParameters loadClasspathResource
+WARNING: Discovered 2 'junit-platform.properties' configuration files in the classpath; only the first will be used.
+Sept 22, 2026 1:13:22 PM org.junit.platform.launcher.core.LauncherConfigurationParameters loadClasspathResource
+WARNING: Discovered 2 'junit-platform.properties' configuration files in the classpath; only the first will be used.
+Sept 22, 2026 1:13:22 PM org.junit.platform.launcher.core.LauncherConfigurationParameters loadClasspathResource
+WARNING: Discovered 2 'junit-platform.properties' configuration files in the classpath; only the first will be used.
+[INFO] Running com.texora.secops.audit.aspect.AuditingAspectTest
+WARNING: A Java agent has been loaded dynamically (C:\Users\SK SHAREEF\.m2\repository\net\bytebuddy\byte-buddy-agent\1.14.19\byte-buddy-agent-1.14.19.jar)
+WARNING: If a serviceability tool is in use, please run with -XX:+EnableDynamicAgentLoading to hide this warning
+WARNING: If a serviceability tool is not in use, please run with -Djdk.instrument.traceUsage for more information
+WARNING: Dynamic loading of agents will be disallowed by default in a future release
+Java HotSpot(TM) 64-Bit Server VM warning: Sharing is only supported for boot loader classes because bootstrap classpath has been appended
+13:13:23.469 [main] WARN com.texora.secops.audit.aspect.AuditingAspect -- No authenticated principal during audit emission — using UNKNOWN actor
+13:13:23.496 [main] WARN com.texora.secops.audit.aspect.AuditingAspect -- No authenticated principal during audit emission — using UNKNOWN actor
+13:13:23.512 [main] WARN com.texora.secops.audit.aspect.AuditingAspect -- No authenticated principal during audit emission — using UNKNOWN actor
+13:13:23.517 [main] WARN com.texora.secops.audit.aspect.AuditingAspect -- No authenticated principal during audit emission — using UNKNOWN actor
+[INFO] Tests run: 4, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 1.252 s -- in com.texora.secops.audit.aspect.AuditingAspectTest
+[INFO] Running com.texora.secops.audit.kafka.AuditKafkaPublisherTest
+13:13:23.786 [main] INFO com.texora.secops.audit.kafka.AuditKafkaPublisher -- Audit retry: re-publishing 1 unpublished events
+13:13:23.795 [main] ERROR com.texora.secops.audit.kafka.AuditKafkaPublisher -- Kafka publish failed for audit event e9524760-6125-4a9f-a829-f278d65d768e topic=test-service.audit.events: Kafka broker unavailable
+[INFO] Tests run: 4, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.269 s -- in com.texora.secops.audit.kafka.AuditKafkaPublisherTest
+[INFO] 
+[INFO] Results:
+[INFO] 
+[INFO] Tests run: 8, Failures: 0, Errors: 0, Skipped: 0
+[INFO] 
+[INFO] 
+[INFO] -----------------< com.texora.secops:texora-sec-stub >------------------
+[INFO] Building Texora SecOps — SEC API Contract Stub 1.0.0-SNAPSHOT      [5/6]
+[INFO]   from 01-platform-foundation\texora-sec-stub\pom.xml
+[INFO] --------------------------------[ jar ]---------------------------------
+[INFO] 
+[INFO] --- clean:3.2.0:clean (default-clean) @ texora-sec-stub ---
+[INFO] Deleting C:\Users\SK SHAREEF\OneDrive\Desktop\TexoraSecOps\01-platform-foundation\texora-sec-stub\target
+[INFO] 
+[INFO] --- antrun:3.1.0:run (lombok-check) @ texora-sec-stub ---
+[INFO] Executing tasks
+[INFO] Executed tasks
+[INFO] 
+[INFO] --- resources:3.3.1:resources (default-resources) @ texora-sec-stub ---
+[INFO] Copying 1 resource from src\main\resources to target\classes
+[INFO] 
+[INFO] --- compiler:3.13.0:compile (default-compile) @ texora-sec-stub ---
+[INFO] Recompiling the module because of changed source code.
+[INFO] Compiling 6 source files with javac [debug release 21] to target\classes
+[INFO] 
+[INFO] --- resources:3.3.1:testResources (default-testResources) @ texora-sec-stub ---
+[INFO] skip non existing resourceDirectory C:\Users\SK SHAREEF\OneDrive\Desktop\TexoraSecOps\01-platform-foundation\texora-sec-stub\src\test\resources
+[INFO] 
+[INFO] --- compiler:3.13.0:testCompile (default-testCompile) @ texora-sec-stub ---
+[INFO] Recompiling the module because of changed dependency.
+[INFO] Compiling 1 source file with javac [debug release 21] to target\test-classes
+[INFO] 
+[INFO] --- surefire:3.5.0:test (default-test) @ texora-sec-stub ---
+[INFO] Using auto detected provider org.apache.maven.surefire.junitplatform.JUnitPlatformProvider
+[INFO] 
+[INFO] -------------------------------------------------------
+[INFO]  T E S T S
+[INFO] -------------------------------------------------------
+[INFO] Running com.texora.secops.sec.stub.controller.PolicyEvaluationControllerTest
+
+  .   ____          _            __ _ _
+ /\\ / ___'_ __ _ _(_)_ __  __ _ \ \ \ \
+( ( )\___ | '_ | '_| | '_ \/ _` | \ \ \ \
+ \\/  ___)| |_)| | | | | || (_| |  ) ) ) )
+  '  |____| .__|_| |_|_| |_\__, | / / / /
+ =========|_|==============|___/=/_/_/_/
+
+ :: Spring Boot ::                (v3.3.4)
+
+2026-09-22T13:13:26.528+05:30  INFO 22736 --- [texora-sec-stub] [           main] t.s.s.s.c.PolicyEvaluationControllerTest : Starting PolicyEvaluationControllerTest using Java 21.0.12.1 with PID 22736 (started by SK SHAREEF in C:\Users\SK SHAREEF\OneDrive\Desktop\TexoraSecOps\01-platform-foundation\texora-sec-stub)
+2026-09-22T13:13:26.530+05:30  INFO 22736 --- [texora-sec-stub] [           main] t.s.s.s.c.PolicyEvaluationControllerTest : No active profile set, falling back to 1 default profile: "default"
+2026-09-22T13:13:28.807+05:30  INFO 22736 --- [texora-sec-stub] [           main] o.s.b.t.m.w.SpringBootMockServletContext : Initializing Spring TestDispatcherServlet ''
+2026-09-22T13:13:28.807+05:30  INFO 22736 --- [texora-sec-stub] [           main] o.s.t.web.servlet.TestDispatcherServlet  : Initializing Servlet ''
+2026-09-22T13:13:28.819+05:30  INFO 22736 --- [texora-sec-stub] [           main] o.s.b.a.e.web.EndpointLinksResolver      : Exposing 2 endpoints beneath base path '/actuator'
+2026-09-22T13:13:28.831+05:30  INFO 22736 --- [texora-sec-stub] [           main] o.s.t.web.servlet.TestDispatcherServlet  : Completed initialization in 22 ms
+2026-09-22T13:13:28.894+05:30  INFO 22736 --- [texora-sec-stub] [           main] t.s.s.s.c.PolicyEvaluationControllerTest : Started PolicyEvaluationControllerTest in 2.709 seconds (process running for 3.825)
+WARNING: A Java agent has been loaded dynamically (C:\Users\SK SHAREEF\.m2\repository\net\bytebuddy\byte-buddy-agent\1.14.19\byte-buddy-agent-1.14.19.jar)
+WARNING: If a serviceability tool is in use, please run with -XX:+EnableDynamicAgentLoading to hide this warning
+WARNING: If a serviceability tool is not in use, please run with -Djdk.instrument.traceUsage for more information
+WARNING: Dynamic loading of agents will be disallowed by default in a future release
+Java HotSpot(TM) 64-Bit Server VM warning: Sharing is only supported for boot loader classes because bootstrap classpath has been appended
+2026-09-22T13:13:29.835+05:30  INFO 22736 --- [texora-sec-stub] [           main] c.t.s.s.s.c.PolicyEvaluationController   : SEC STUB evaluate: tenant=b73e4788-2551-4c06-95ed-56028328a7ac subject=82e82eda-ac23-4c9b-893a-13680ee0fc5e resource=UNKNOWN_RESOURCE/null action=UNKNOWN_ACTION => DENY [requestId=e07f8172-ac01-450c-b223-e78a5fb42732]
+2026-09-22T13:13:29.877+05:30  WARN 22736 --- [texora-sec-stub] [           main] c.t.s.s.s.c.PolicyEvaluationController   : SEC stub received invalid request: action is required
+2026-09-22T13:13:29.882+05:30  WARN 22736 --- [texora-sec-stub] [           main] c.t.s.s.s.c.PolicyEvaluationController   : SEC stub received invalid request: tenantId is required
+2026-09-22T13:13:29.900+05:30  INFO 22736 --- [texora-sec-stub] [           main] c.t.s.s.s.c.PolicyEvaluationController   : SEC stub: runtime rule added: StubDecisionRule{resourceType='null', action='null', decision='DENY'}
+2026-09-22T13:13:29.902+05:30  INFO 22736 --- [texora-sec-stub] [           main] c.t.s.s.s.c.PolicyEvaluationController   : SEC STUB evaluate: tenant=b73e4788-2551-4c06-95ed-56028328a7ac subject=82e82eda-ac23-4c9b-893a-13680ee0fc5e resource=ANY_RESOURCE/null action=ANY_ACTION => DENY [requestId=00c6ac93-a6ea-4979-9ec0-f89cd5af7617]
+2026-09-22T13:13:29.905+05:30  INFO 22736 --- [texora-sec-stub] [           main] c.t.s.s.s.c.PolicyEvaluationController   : SEC stub: all runtime rules cleared
+2026-09-22T13:13:29.910+05:30  INFO 22736 --- [texora-sec-stub] [           main] c.t.s.s.s.c.PolicyEvaluationController   : SEC STUB evaluate: tenant=b73e4788-2551-4c06-95ed-56028328a7ac subject=82e82eda-ac23-4c9b-893a-13680ee0fc5e resource=VPN_GATEWAY/2923bb30-0ea2-41c5-adb2-9e3ffb619d04 action=CONNECT => PERMIT [requestId=32c86f28-3331-4419-9bb7-cebf57522978]
+2026-09-22T13:13:29.916+05:30  INFO 22736 --- [texora-sec-stub] [           main] c.t.s.s.s.c.PolicyEvaluationController   : SEC STUB evaluate: tenant=b73e4788-2551-4c06-95ed-56028328a7ac subject=82e82eda-ac23-4c9b-893a-13680ee0fc5e resource=AUDIT_LOG/null action=DELETE => DENY [requestId=1ea66c5e-25e6-4c48-9ea4-dd1ec3ff826b]
+[INFO] Tests run: 7, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 4.184 s -- in com.texora.secops.sec.stub.controller.PolicyEvaluationControllerTest
+[INFO] 
+[INFO] Results:
+[INFO] 
+[INFO] Tests run: 7, Failures: 0, Errors: 0, Skipped: 0
+[INFO] 
+[INFO] 
+[INFO] -------------------< com.texora.secops:sso-service >--------------------
+[INFO] Building SSO / IAM Service 1.0.0-SNAPSHOT                          [6/6]
+[INFO]   from 02-services\sso-service\pom.xml
+[INFO] --------------------------------[ jar ]---------------------------------
+[INFO] 
+[INFO] --- clean:3.2.0:clean (default-clean) @ sso-service ---
+[INFO] Deleting C:\Users\SK SHAREEF\OneDrive\Desktop\TexoraSecOps\02-services\sso-service\target
+[INFO] 
+[INFO] --- antrun:3.1.0:run (lombok-check) @ sso-service ---
+[INFO] Executing tasks
+[INFO] Executed tasks
+[INFO] 
+[INFO] --- enforcer:3.6.3:enforce (no-lombok) @ sso-service ---
+[INFO] Downloading from central: https://repo.maven.apache.org/maven2/org/codehaus/plexus/plexus-utils/4.0.3/plexus-utils-4.0.3.pom
+[INFO] Downloaded from central: https://repo.maven.apache.org/maven2/org/codehaus/plexus/plexus-utils/4.0.3/plexus-utils-4.0.3.pom (6.8 kB at 11 kB/s)
+[INFO] Downloading from central: https://repo.maven.apache.org/maven2/org/codehaus/plexus/plexus/25/plexus-25.pom
+[INFO] Downloaded from central: https://repo.maven.apache.org/maven2/org/codehaus/plexus/plexus/25/plexus-25.pom (31 kB at 330 kB/s)
+[INFO] Downloading from central: https://repo.maven.apache.org/maven2/org/junit/junit-bom/5.14.1/junit-bom-5.14.1.pom
+[INFO] Downloaded from central: https://repo.maven.apache.org/maven2/org/junit/junit-bom/5.14.1/junit-bom-5.14.1.pom (5.7 kB at 55 kB/s)
+[INFO] Downloading from central: https://repo.maven.apache.org/maven2/org/apache/maven/enforcer/enforcer-api/3.6.3/enforcer-api-3.6.3.pom
+[INFO] Downloaded from central: https://repo.maven.apache.org/maven2/org/apache/maven/enforcer/enforcer-api/3.6.3/enforcer-api-3.6.3.pom (3.8 kB at 43 kB/s)
+[INFO] Downloading from central: https://repo.maven.apache.org/maven2/org/apache/maven/enforcer/enforcer-rules/3.6.3/enforcer-rules-3.6.3.pom
+[INFO] Downloaded from central: https://repo.maven.apache.org/maven2/org/apache/maven/enforcer/enforcer-rules/3.6.3/enforcer-rules-3.6.3.pom (5.5 kB at 61 kB/s)
+[INFO] Downloading from central: https://repo.maven.apache.org/maven2/org/apache/maven/resolver/maven-resolver-util/1.9.27/maven-resolver-util-1.9.27.pom
+[INFO] Downloaded from central: https://repo.maven.apache.org/maven2/org/apache/maven/resolver/maven-resolver-util/1.9.27/maven-resolver-util-1.9.27.pom (2.2 kB at 25 kB/s)
+[INFO] Downloading from central: https://repo.maven.apache.org/maven2/org/apache/maven/resolver/maven-resolver/1.9.27/maven-resolver-1.9.27.pom
+[INFO] Downloaded from central: https://repo.maven.apache.org/maven2/org/apache/maven/resolver/maven-resolver/1.9.27/maven-resolver-1.9.27.pom (25 kB at 217 kB/s)
+[INFO] Downloading from central: https://repo.maven.apache.org/maven2/org/apache/maven/maven-parent/47/maven-parent-47.pom
+[INFO] Downloaded from central: https://repo.maven.apache.org/maven2/org/apache/maven/maven-parent/47/maven-parent-47.pom (54 kB at 553 kB/s)
+[INFO] Downloading from central: https://repo.maven.apache.org/maven2/org/apache/apache/37/apache-37.pom
+[INFO] Downloaded from central: https://repo.maven.apache.org/maven2/org/apache/apache/37/apache-37.pom (26 kB at 288 kB/s)
+[INFO] Downloading from central: https://repo.maven.apache.org/maven2/org/junit/junit-bom/5.14.2/junit-bom-5.14.2.pom
+[INFO] Downloaded from central: https://repo.maven.apache.org/maven2/org/junit/junit-bom/5.14.2/junit-bom-5.14.2.pom (5.7 kB at 62 kB/s)
+[INFO] Downloading from central: https://repo.maven.apache.org/maven2/org/apache/maven/resolver/maven-resolver-api/1.9.27/maven-resolver-api-1.9.27.pom
+[INFO] Downloaded from central: https://repo.maven.apache.org/maven2/org/apache/maven/resolver/maven-resolver-api/1.9.27/maven-resolver-api-1.9.27.pom (2.2 kB at 26 kB/s)
+[INFO] Downloading from central: https://repo.maven.apache.org/maven2/org/apache/commons/commons-lang3/3.20.0/commons-lang3-3.20.0.pom
+[INFO] Downloaded from central: https://repo.maven.apache.org/maven2/org/apache/commons/commons-lang3/3.20.0/commons-lang3-3.20.0.pom (33 kB at 472 kB/s)
+[INFO] Downloading from central: https://repo.maven.apache.org/maven2/org/apache/commons/commons-parent/92/commons-parent-92.pom
+[INFO] Downloaded from central: https://repo.maven.apache.org/maven2/org/apache/commons/commons-parent/92/commons-parent-92.pom (80 kB at 971 kB/s)
+[INFO] Downloading from central: https://repo.maven.apache.org/maven2/commons-codec/commons-codec/1.22.0/commons-codec-1.22.0.pom
+[INFO] Downloaded from central: https://repo.maven.apache.org/maven2/commons-codec/commons-codec/1.22.0/commons-codec-1.22.0.pom (19 kB at 195 kB/s)
+[INFO] Downloading from central: https://repo.maven.apache.org/maven2/org/apache/commons/commons-parent/98/commons-parent-98.pom
+[INFO] Downloaded from central: https://repo.maven.apache.org/maven2/org/apache/commons/commons-parent/98/commons-parent-98.pom (80 kB at 840 kB/s)
+[INFO] Downloading from central: https://repo.maven.apache.org/maven2/commons-io/commons-io/2.22.0/commons-io-2.22.0.pom
+[INFO] Downloaded from central: https://repo.maven.apache.org/maven2/commons-io/commons-io/2.22.0/commons-io-2.22.0.pom (20 kB at 230 kB/s)
+[INFO] Downloading from central: https://repo.maven.apache.org/maven2/org/codehaus/plexus/plexus-utils/4.0.3/plexus-utils-4.0.3.jar
+[INFO] Downloaded from central: https://repo.maven.apache.org/maven2/org/codehaus/plexus/plexus-utils/4.0.3/plexus-utils-4.0.3.jar (193 kB at 928 kB/s)
+[INFO] Downloading from central: https://repo.maven.apache.org/maven2/org/apache/maven/enforcer/enforcer-api/3.6.3/enforcer-api-3.6.3.jar
+[INFO] Downloading from central: https://repo.maven.apache.org/maven2/org/apache/maven/enforcer/enforcer-rules/3.6.3/enforcer-rules-3.6.3.jar
+[INFO] Downloading from central: https://repo.maven.apache.org/maven2/org/apache/maven/resolver/maven-resolver-util/1.9.27/maven-resolver-util-1.9.27.jar
+[INFO] Downloading from central: https://repo.maven.apache.org/maven2/org/apache/commons/commons-lang3/3.20.0/commons-lang3-3.20.0.jar
+[INFO] Downloading from central: https://repo.maven.apache.org/maven2/commons-codec/commons-codec/1.22.0/commons-codec-1.22.0.jar
+[INFO] Downloaded from central: https://repo.maven.apache.org/maven2/org/apache/maven/enforcer/enforcer-rules/3.6.3/enforcer-rules-3.6.3.jar (163 kB at 1.3 MB/s)
+[INFO] Downloading from central: https://repo.maven.apache.org/maven2/commons-io/commons-io/2.22.0/commons-io-2.22.0.jar
+[INFO] Downloaded from central: https://repo.maven.apache.org/maven2/org/apache/maven/enforcer/enforcer-api/3.6.3/enforcer-api-3.6.3.jar (15 kB at 61 kB/s)
+[INFO] Downloaded from central: https://repo.maven.apache.org/maven2/commons-io/commons-io/2.22.0/commons-io-2.22.0.jar (609 kB at 1.8 MB/s)
+[INFO] Downloaded from central: https://repo.maven.apache.org/maven2/org/apache/maven/resolver/maven-resolver-util/1.9.27/maven-resolver-util-1.9.27.jar (197 kB at 542 kB/s)
+[INFO] Downloaded from central: https://repo.maven.apache.org/maven2/org/apache/commons/commons-lang3/3.20.0/commons-lang3-3.20.0.jar (714 kB at 1.3 MB/s)
+[INFO] Downloaded from central: https://repo.maven.apache.org/maven2/commons-codec/commons-codec/1.22.0/commons-codec-1.22.0.jar (420 kB at 677 kB/s)
+[INFO] Rule 0: org.apache.maven.enforcer.rules.dependency.BannedDependencies passed
+[INFO] 
+[INFO] --- resources:3.3.1:resources (default-resources) @ sso-service ---
+[INFO] Copying 4 resources from src\main\resources to target\classes
+[INFO] 
+[INFO] --- compiler:3.13.0:compile (default-compile) @ sso-service ---
+[INFO] Recompiling the module because of changed dependency.
+[INFO] Compiling 72 source files with javac [debug release 21] to target\classes
+[INFO] 
+[INFO] --- resources:3.3.1:testResources (default-testResources) @ sso-service ---
+[INFO] Copying 0 resource from src\test\resources to target\test-classes
+[INFO] 
+[INFO] --- compiler:3.13.0:testCompile (default-testCompile) @ sso-service ---
+[INFO] Recompiling the module because of changed dependency.
+[INFO] Compiling 7 source files with javac [debug release 21] to target\test-classes
+[INFO] 
+[INFO] --- surefire:3.5.0:test (default-test) @ sso-service ---
+[INFO] Using auto detected provider org.apache.maven.surefire.junitplatform.JUnitPlatformProvider
+[INFO] 
+[INFO] -------------------------------------------------------
+[INFO]  T E S T S
+[INFO] -------------------------------------------------------
+Sept 22, 2026 1:13:37 PM org.junit.platform.launcher.core.LauncherConfigurationParameters loadClasspathResource
+WARNING: Discovered 2 'junit-platform.properties' configuration files in the classpath; only the first will be used.
+Sept 22, 2026 1:13:37 PM org.junit.platform.launcher.core.LauncherConfigurationParameters loadClasspathResource
+WARNING: Discovered 2 'junit-platform.properties' configuration files in the classpath; only the first will be used.
+Sept 22, 2026 1:13:37 PM org.junit.platform.launcher.core.LauncherConfigurationParameters loadClasspathResource
+WARNING: Discovered 2 'junit-platform.properties' configuration files in the classpath; only the first will be used.
+Sept 22, 2026 1:13:37 PM org.junit.platform.launcher.core.LauncherConfigurationParameters loadClasspathResource
+WARNING: Discovered 2 'junit-platform.properties' configuration files in the classpath; only the first will be used.
+Sept 22, 2026 1:13:37 PM org.junit.platform.launcher.core.LauncherConfigurationParameters loadClasspathResource
+WARNING: Discovered 2 'junit-platform.properties' configuration files in the classpath; only the first will be used.
+Sept 22, 2026 1:13:37 PM org.junit.platform.launcher.core.LauncherConfigurationParameters loadClasspathResource
+WARNING: Discovered 2 'junit-platform.properties' configuration files in the classpath; only the first will be used.
+Sept 22, 2026 1:13:37 PM org.junit.platform.launcher.core.LauncherConfigurationParameters loadClasspathResource
+WARNING: Discovered 2 'junit-platform.properties' configuration files in the classpath; only the first will be used.
+[INFO] Running com.texora.secops.sso.application.service.ApplicationRegistrationServiceTest
+WARNING: A Java agent has been loaded dynamically (C:\Users\SK SHAREEF\.m2\repository\net\bytebuddy\byte-buddy-agent\1.14.19\byte-buddy-agent-1.14.19.jar)
+WARNING: If a serviceability tool is in use, please run with -XX:+EnableDynamicAgentLoading to hide this warning
+WARNING: If a serviceability tool is not in use, please run with -Djdk.instrument.traceUsage for more information
+WARNING: Dynamic loading of agents will be disallowed by default in a future release
+Java HotSpot(TM) 64-Bit Server VM warning: Sharing is only supported for boot loader classes because bootstrap classpath has been appended
+[INFO] Tests run: 2, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 1.643 s -- in com.texora.secops.sso.application.service.ApplicationRegistrationServiceTest
+[INFO] Running com.texora.secops.sso.authn.service.LoginOrchestrationServiceTest
+13:13:39.809 [main] INFO com.texora.secops.sso.authn.service.LoginOrchestrationService -- Login denied: consent/policy check failed for dcUserId=0e8ce9b6-9030-4f45-9e66-3e8dc71a4d73 applicationId=0073055f-3cb4-4e80-b592-720f98e1eaa7
+13:13:39.826 [main] INFO com.texora.secops.sso.authn.service.LoginOrchestrationService -- Login denied: LDAP bind failed for username=alice reason=BIND_REJECTED
+13:13:39.834 [main] INFO com.texora.secops.sso.authn.service.LoginOrchestrationService -- Login denied: MFA required but not enrolled for dcUserId=ecb1cedf-3fb2-4609-8192-2baa11233e0b
+13:13:39.846 [main] INFO com.texora.secops.sso.authn.service.LoginOrchestrationService -- Login succeeded for dcUserId=71415274-192d-4693-9351-20a8e5ae479a applicationId=9e776873-5721-4cc7-81d6-9d918bdc795c sessionId=cd58ea1f-25ad-4e71-b19b-d500e5b8a269 tokensIssued=0
+13:13:39.852 [main] INFO com.texora.secops.sso.authn.service.LoginOrchestrationService -- Login denied: unknown or inactive applicationId=406a31cb-0de8-4463-b604-b77884d64706
+13:13:39.859 [main] INFO com.texora.secops.sso.authn.service.LoginOrchestrationService -- Login denied: MFA challenge failed for dcUserId=2e08fd82-b61b-46ac-9e83-be645e2144e9
+13:13:39.863 [main] INFO com.texora.secops.sso.authn.service.LoginOrchestrationService -- Login denied: unknown or inactive applicationId=81aee4ca-5b23-4541-b67e-6180ee4a3423
+[INFO] Tests run: 7, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.265 s -- in com.texora.secops.sso.authn.service.LoginOrchestrationServiceTest
+[INFO] Running com.texora.secops.sso.consent.service.ConsentPolicyServiceTest
+13:13:39.970 [main] INFO com.texora.secops.sso.consent.service.ConsentPolicyService -- SEC returned DENY for applicationId=4e4ee5bc-d320-4bb3-8469-36bc8dbdc0ef dcUserId=b6b1cf2c-d7f1-47bd-9e46-99af4ed7e9e7: no matching policy
+13:13:39.973 [main] INFO com.texora.secops.sso.consent.service.ConsentPolicyService -- No active consent grant for dcUserId=dcc9d725-fec0-405c-ada0-934571f5de50 applicationId=32fe1dfb-bdff-4356-846b-7249f27b013f — denying (fail-closed)
+13:13:39.977 [main] INFO com.texora.secops.sso.consent.service.ConsentPolicyService -- No policy decision returned by SEC for applicationId=47e86d51-e943-4df1-84d5-50d9b6d387ca — denying (fail-closed)
+13:13:39.981 [main] INFO com.texora.secops.sso.consent.service.ConsentPolicyService -- No active consent grant for dcUserId=0a144f1a-bb50-4a27-8f52-f5a1cc562267 applicationId=1cdfa4e6-dc99-4bd0-8a3d-b0d3c49ffc64 — denying (fail-closed)
+[INFO] Tests run: 5, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.116 s -- in com.texora.secops.sso.consent.service.ConsentPolicyServiceTest
+[INFO] Running com.texora.secops.sso.session.service.TokenServiceTest
+[INFO] Tests run: 2, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.122 s -- in com.texora.secops.sso.session.service.TokenServiceTest
+[INFO] 
+[INFO] Results:
+[INFO] 
+[INFO] Tests run: 16, Failures: 0, Errors: 0, Skipped: 0
+[INFO] 
+[INFO] ------------------------------------------------------------------------
+[INFO] Reactor Summary for Texora SecOps Platform — Foundation 1.0.0-SNAPSHOT:
+[INFO] 
+[INFO] Texora SecOps Platform — Foundation ................ SUCCESS [  0.808 s]
+[INFO] Texora SecOps — Shared Spring Boot Starter ......... SUCCESS [  7.891 s]
+[INFO] Texora SecOps — IAM Client Library ................. SUCCESS [  3.277 s]
+[INFO] Texora SecOps — Audit SDK .......................... SUCCESS [  4.145 s]
+[INFO] Texora SecOps — SEC API Contract Stub .............. SUCCESS [  6.189 s]
+[INFO] SSO / IAM Service .................................. SUCCESS [ 10.148 s]
+[INFO] ------------------------------------------------------------------------
+[INFO] BUILD SUCCESS
+[INFO] ------------------------------------------------------------------------
+[INFO] Total time:  32.873 s
+[INFO] Finished at: 2026-09-22T13:13:40+05:30
+[INFO] ------------------------------------------------------------------------

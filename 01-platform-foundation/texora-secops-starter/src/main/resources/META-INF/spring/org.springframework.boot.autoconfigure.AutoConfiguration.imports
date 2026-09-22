@@ -1,0 +1,2 @@
+com.texora.secops.starter.config.StarterAutoConfiguration
+com.texora.secops.starter.config.JpaAuditingConfig

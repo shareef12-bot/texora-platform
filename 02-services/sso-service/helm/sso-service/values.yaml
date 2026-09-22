@@ -1,0 +1,36 @@
+replicaCount: 3
+
+image:
+  repository: registry.texora.internal/secops/sso-service
+  tag: "1.0.0-SNAPSHOT"
+  pullPolicy: IfNotPresent
+
+namespace: texora-secops
+
+resources:
+  requests:
+    cpu: 250m
+    memory: 512Mi
+  limits:
+    cpu: "1"
+    memory: 1Gi
+
+env:
+  SSO_DB_URL: "jdbc:postgresql://postgres.texora-secops.svc.cluster.local:5432/texora_secops"
+  SSO_REDIS_HOST: "redis.texora-secops.svc.cluster.local"
+  SSO_KAFKA_BOOTSTRAP: "kafka.texora-secops.svc.cluster.local:9092"
+  SSO_ISSUER_URI: "https://sso.texora.internal"
+  SEC_SERVICE_BASE_URL: "http://sec-service.texora-secops.svc.cluster.local"
+  LDAP_SERVICE_STUB_MODE: "true"
+  DC_SERVICE_STUB_MODE: "true"
+
+probes:
+  liveness:
+    path: /actuator/health/liveness
+    initialDelaySeconds: 20
+  readiness:
+    path: /actuator/health/readiness
+    initialDelaySeconds: 10
+
+service:
+  port: 8080

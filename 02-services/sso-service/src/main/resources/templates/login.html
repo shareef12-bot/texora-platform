@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8"/>
+    <title>Texora SecOps — Sign in</title>
+</head>
+<body>
+<h1>Sign in</h1>
+
+<p th:if="${error != null}" style="color: red;">
+    Sign-in failed: <span th:text="${error}">reason</span>
+</p>
+
+<p th:if="${applicationId == null}" style="color: red;">
+    Unknown or unregistered application (client_id: <span th:text="${clientId}"></span>).
+    Contact your SSO administrator.
+</p>
+
+<form th:if="${applicationId != null}" method="post" th:action="@{/login}">
+    <input type="hidden" name="applicationId" th:value="${applicationId}"/>
+
+    <label>Username
+        <input type="text" name="username" required="required"/>
+    </label>
+    <br/>
+    <label>Password
+        <input type="password" name="password" required="required"/>
+    </label>
+    <br/>
+    <label>MFA code (if enrolled)
+        <input type="text" name="mfaCode"/>
+    </label>
+    <br/>
+    <button type="submit">Sign in</button>
+</form>
+</body>
+</html>
