@@ -1,12 +1,14 @@
 package com.texora.secops.starter.exception;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+
 import com.texora.secops.starter.config.StarterAutoConfiguration;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+//NEW
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
-import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
+import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -14,8 +16,14 @@ import org.springframework.web.bind.annotation.RestController;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
-@WebMvcTest(GlobalExceptionHandlerTest.TestController.class)
-@Import(StarterAutoConfiguration.class)
+//texora-secops-starter is a shared library, not a runnable app — it has no
+//@SpringBootApplication class for @WebMvcTest to auto-detect. We tell it
+//exactly which classes to load instead of relying on auto-detection.
+@WebMvcTest(controllers = GlobalExceptionHandlerTest.TestController.class)
+@ContextConfiguration(classes = {
+ GlobalExceptionHandlerTest.TestController.class,
+ StarterAutoConfiguration.class
+})
 class GlobalExceptionHandlerTest {
 
     @Autowired

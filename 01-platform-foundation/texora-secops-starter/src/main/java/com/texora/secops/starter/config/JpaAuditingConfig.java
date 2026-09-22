@@ -1,6 +1,10 @@
 package com.texora.secops.starter.config;
 
-import org.springframework.context.annotation.Configuration;
+import jakarta.persistence.EntityManagerFactory;
+import org.springframework.boot.autoconfigure.AutoConfiguration;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
+import org.springframework.boot.autoconfigure.orm.jpa.HibernateJpaAutoConfiguration;
 import org.springframework.data.jpa.repository.config.EnableJpaAuditing;
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 
@@ -13,7 +17,9 @@ import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
  *   @EnableJpaRepositories(basePackages = "com.texora.secops.myservice.repository")
  * }</pre>
  */
-@Configuration
+@AutoConfiguration(after = HibernateJpaAutoConfiguration.class)
+@ConditionalOnClass(EntityManagerFactory.class)
+@ConditionalOnBean(EntityManagerFactory.class)
 @EnableJpaAuditing
 public class JpaAuditingConfig {
     // Spring Data auditing is activated by the annotation alone.

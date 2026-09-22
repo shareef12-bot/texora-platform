@@ -107,15 +107,15 @@ public class AuditKafkaPublisher {
 
         future.whenComplete((result, ex) -> {
             if (ex != null) {
+                repository.updateKafkaStatus(event.getId(), AuditEvent.KAFKA_STATUS_FAILED);
                 LOGGER.error("Kafka publish failed for audit event {} topic={}: {}",
                     event.getId(), topic, ex.getMessage());
-                repository.updateKafkaStatus(event.getId(), AuditEvent.KAFKA_STATUS_FAILED);
             } else {
+                repository.updateKafkaStatus(event.getId(), AuditEvent.KAFKA_STATUS_PUBLISHED);
                 LOGGER.debug("Audit event {} published to topic {} partition {} offset {}",
                     event.getId(), topic,
                     result.getRecordMetadata().partition(),
                     result.getRecordMetadata().offset());
-                repository.updateKafkaStatus(event.getId(), AuditEvent.KAFKA_STATUS_PUBLISHED);
             }
         });
     }

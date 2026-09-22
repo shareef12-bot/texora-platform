@@ -175,8 +175,13 @@ public class AuditingAspect {
             }
         }
 
+        if (joinPoint == null) {
+            return null;
+        }
+
         Object[] args = joinPoint.getArgs();
         if (args != null && args.length > 0 && args[0] != null) {
+            // Try getId() on the first arg (e.g. a DTO)
             // Try getId() on the first arg (e.g. a DTO)
             try {
                 Object id = args[0].getClass().getMethod("getId").invoke(args[0]);
@@ -194,7 +199,7 @@ public class AuditingAspect {
     }
 
     private String resolvePayload(Audited audited, ProceedingJoinPoint joinPoint) {
-        if (!audited.includePayload()) {
+        if (!audited.includePayload() || joinPoint == null) {
             return null;
         }
         Object[] args = joinPoint.getArgs();

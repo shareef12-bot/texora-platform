@@ -72,8 +72,9 @@ public class RbacInterceptor implements HandlerInterceptor {
 
         // Step 4: Resolve required roles (method annotation takes precedence over class)
         RequiresRole methodAnnotation = handlerMethod.getMethodAnnotation(RequiresRole.class);
-        RequiresRole classAnnotation  = handlerMethod.getBeanType().getAnnotation(RequiresRole.class);
-        RequiresRole effective = (methodAnnotation != null) ? methodAnnotation : classAnnotation;
+        RequiresRole effective = (methodAnnotation != null)
+            ? methodAnnotation
+            : handlerMethod.getBeanType().getAnnotation(RequiresRole.class);
 
         if (effective == null) {
             // No @RequiresRole declared — endpoint is authenticated but not role-restricted.

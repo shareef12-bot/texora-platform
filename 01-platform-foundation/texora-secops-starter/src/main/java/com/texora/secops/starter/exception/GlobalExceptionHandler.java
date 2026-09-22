@@ -140,6 +140,8 @@ public class GlobalExceptionHandler {
             traceId, request.getMethod(), request.getRequestURI(), ex.getMessage(), ex);
 
         // Never leak internal detail — fail closed
+        // Never leak internal detail — fail closed. message is intentionally null/omitted;
+        // callers get status/code/traceId only and should contact support with the traceId.
         return ResponseEntity
             .status(HttpStatus.INTERNAL_SERVER_ERROR)
             .body(new ApiError(
@@ -147,7 +149,7 @@ public class GlobalExceptionHandler {
                 500,
                 "Internal Server Error",
                 "INTERNAL_ERROR",
-                "An unexpected error occurred. Contact platform support with traceId: " + traceId,
+                null,
                 traceId
             ));
     }

@@ -1,7 +1,9 @@
 package com.texora.secops.starter.exception;
 
-import com.fasterxml.jackson.annotation.JsonFormat;
 
+
+import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.annotation.JsonInclude;
 import java.time.Instant;
 import java.util.Objects;
 
@@ -28,7 +30,9 @@ public final class ApiError {
     private final int status;
     private final String error;
     private final String code;
-    private final String message;
+
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    private final String message; // nullable — omitted from JSON for 500s to avoid leaking internal detail
     private final String traceId;
 
     public ApiError(Instant timestamp, int status, String error,
@@ -37,7 +41,7 @@ public final class ApiError {
         this.status    = status;
         this.error     = Objects.requireNonNull(error,   "error");
         this.code      = Objects.requireNonNull(code,    "code");
-        this.message   = Objects.requireNonNull(message, "message");
+        this.message   = message; // nullable — omitted from JSON when null
         this.traceId   = traceId; // nullable — may be absent in tests
     }
 

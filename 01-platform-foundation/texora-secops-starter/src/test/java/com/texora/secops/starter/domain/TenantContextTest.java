@@ -1,5 +1,7 @@
+// NEW
 package com.texora.secops.starter.domain;
 
+import com.texora.secops.starter.exception.TenantContextMissingException;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 

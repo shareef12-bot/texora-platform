@@ -11,7 +11,7 @@ import java.util.Optional;
 
 @AutoConfiguration
 @ConditionalOnWebApplication
-@Import({JacksonConfig.class, JpaAuditingConfig.class, ObservabilityConfig.class})
+@Import({JacksonConfig.class, ObservabilityConfig.class})
 public class StarterAutoConfiguration {
 
     @Bean
