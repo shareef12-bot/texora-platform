@@ -56,7 +56,7 @@
         <tomcat.version>10.1.59</tomcat.version>
 
         <!-- OpenTelemetry -->
-        <opentelemetry-bom.version>1.41.0</opentelemetry-bom.version>
+        <opentelemetry-bom.version>1.66.0</opentelemetry-bom.version>
         <micrometer-otel.version>1.13.4</micrometer-otel.version>
 
         <!-- Kafka -->
