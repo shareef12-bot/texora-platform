@@ -70,7 +70,7 @@
         <maven-surefire-plugin.version>3.5.0</maven-surefire-plugin.version>
         <spotbugs-maven-plugin.version>4.8.6.4</spotbugs-maven-plugin.version>
         <owasp-dependency-check.version>10.0.4</owasp-dependency-check.version>
-        <cyclonedx-maven-plugin.version>2.8.0</cyclonedx-maven-plugin.version>
+        <cyclonedx-maven-plugin.version>2.9.3</cyclonedx-maven-plugin.version>
     </properties>
 
     <dependencyManagement>
