@@ -53,7 +53,7 @@
              the first published 10.1.x release that actually contains the
              fix. Re-check this against each new Trivy run and bump again
              if newer CVEs land. -->
-        <tomcat.version>10.1.59</tomcat.version>
+        <tomcat.version>11.0.26</tomcat.version>
 
         <!-- OpenTelemetry -->
         <opentelemetry-bom.version>1.41.0</opentelemetry-bom.version>
