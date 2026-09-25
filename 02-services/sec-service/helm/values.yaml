@@ -1,0 +1,97 @@
+# ============================================================
+# SEC Service — Helm Chart Values
+# Namespace: texora-secops  (matches platform convention)
+# HPA minimum 3 replicas — six services fail closed on SEC
+# unavailability, so a SEC outage = platform-wide DoS (NFR)
+# ============================================================
+
+replicaCount: 3   # minimum — HPA scales up, never below 3
+
+image:
+  repository: texora/sec-service
+  tag: "1.0.0-SNAPSHOT"
+  pullPolicy: IfNotPresent
+
+nameOverride: "sec-service"
+fullnameOverride: "sec-service"
+
+service:
+  type: ClusterIP
+  port: 8087
+
+resources:
+  requests:
+    cpu: "500m"
+    memory: "512Mi"
+  limits:
+    cpu: "2000m"
+    memory: "1024Mi"
+
+autoscaling:
+  enabled: true
+  minReplicas: 3   # HARD MINIMUM — do not reduce without platform-wide risk assessment
+  maxReplicas: 10
+  targetCPUUtilizationPercentage: 70
+  targetMemoryUtilizationPercentage: 80
+
+env:
+  - name: DB_URL
+    valueFrom:
+      secretKeyRef:
+        name: sec-db-credentials
+        key: url
+  - name: DB_USERNAME
+    valueFrom:
+      secretKeyRef:
+        name: sec-db-credentials
+        key: username
+  - name: DB_PASSWORD
+    valueFrom:
+      secretKeyRef:
+        name: sec-db-credentials
+        key: password
+  - name: KAFKA_BOOTSTRAP_SERVERS
+    valueFrom:
+      configMapKeyRef:
+        name: platform-kafka-config
+        key: bootstrap-servers
+  - name: SSO_ISSUER_URI
+    valueFrom:
+      configMapKeyRef:
+        name: platform-sso-config
+        key: issuer-uri
+  - name: MTLS_ENABLED
+    value: "true"
+
+livenessProbe:
+  httpGet:
+    path: /actuator/health/liveness
+    port: 8087
+  initialDelaySeconds: 60
+  periodSeconds: 30
+  failureThreshold: 3
+
+readinessProbe:
+  httpGet:
+    path: /actuator/health/readiness
+    port: 8087
+  initialDelaySeconds: 30
+  periodSeconds: 10
+  failureThreshold: 3
+
+podDisruptionBudget:
+  enabled: true
+  minAvailable: 2   # always keep 2 pods up during rolling updates
+
+nodeSelector: {}
+tolerations: []
+affinity:
+  podAntiAffinity:
+    requiredDuringSchedulingIgnoredDuringExecution:
+      - labelSelector:
+          matchExpressions:
+            - key: app
+              operator: In
+              values:
+                - sec-service
+        topologyKey: kubernetes.io/hostname

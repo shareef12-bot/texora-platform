@@ -1,0 +1,93 @@
+spring:
+  application:
+    name: sec-service
+
+  datasource:
+    url: ${DB_URL:jdbc:postgresql://localhost:5432/texora_secops}
+    username: ${DB_USERNAME:sec_app}
+    password: ${DB_PASSWORD:Shareef@1234}
+    hikari:
+      maximum-pool-size: 20
+      connection-timeout: 5000
+
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    properties:
+      hibernate:
+        default_schema: sec
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+        jdbc:
+          time_zone: UTC
+
+  flyway:
+    enabled: true
+    schemas: sec
+    locations: classpath:db/migration
+    baseline-on-migrate: false
+
+  kafka:
+    bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS:localhost:9092}
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+      acks: all
+      retries: 3
+      properties:
+        enable.idempotence: true
+    consumer:
+      group-id: sec-service
+      auto-offset-reset: earliest
+
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: ${SSO_ISSUER_URI:http://localhost:8080/realms/texora}
+
+server:
+  port: 8087
+  ssl:
+    enabled: ${SSL_ENABLED:false}
+    key-store: ${SSL_KEY_STORE:}
+    key-store-password: ${SSL_KEY_STORE_PASSWORD:}
+    trust-store: ${SSL_TRUST_STORE:}
+    trust-store-password: ${SSL_TRUST_STORE_PASSWORD:}
+    client-auth: ${SSL_CLIENT_AUTH:none}
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,prometheus,metrics
+  endpoint:
+    health:
+      show-details: when-authorized
+  metrics:
+    tags:
+      application: sec-service
+    distribution:
+      percentiles-histogram:
+        http.server.requests: true
+
+kafka:
+  topics:
+    audit-events: sec.audit.events
+
+sec:
+  audit:
+    chain-verification:
+      cron: "0 */15 * * * *"   # every 15 minutes
+    kafka:
+      retry-attempts: 5
+      retry-backoff-ms: 1000
+  approval:
+    expiry-hours: ${APPROVAL_EXPIRY_HOURS:48}
+  mtls:
+    enabled: ${MTLS_ENABLED:true}
+    trusted-services: ${MTLS_TRUSTED_SERVICES:sso,dc,ldap,ftp,cgi,siem,vpn}
+
+logging:
+  level:
+    com.texora.secops.sec: INFO
+    org.springframework.security: WARN

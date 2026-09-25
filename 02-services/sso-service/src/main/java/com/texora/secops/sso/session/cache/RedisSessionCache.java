@@ -1,6 +1,6 @@
 package com.texora.secops.sso.session.cache;
 
-import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Component;
 
 import java.time.Duration;
@@ -19,9 +19,9 @@ public class RedisSessionCache {
     private static final String SESSION_KEY_PREFIX = "sso:session:";
     private static final String TOKEN_KEY_PREFIX = "sso:token:";
 
-    private final RedisTemplate<String, String> redisTemplate;
+    private final StringRedisTemplate redisTemplate;
 
-    public RedisSessionCache(RedisTemplate<String, String> redisTemplate) {
+    public RedisSessionCache(StringRedisTemplate redisTemplate) {
         this.redisTemplate = redisTemplate;
     }
 

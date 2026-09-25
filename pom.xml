@@ -23,6 +23,7 @@
         <module>01-platform-foundation/texora-audit-sdk</module>
         <module>01-platform-foundation/texora-sec-stub</module>
         <module>02-services/sso-service</module>
+        <module>02-services/sec-service</module>
     </modules>
 
     <repositories>

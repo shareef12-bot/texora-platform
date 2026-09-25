@@ -126,10 +126,15 @@
     </dependency>
 
     <!-- OpenAPI -->
+    <!-- 2.5.0 predates Spring Boot 3.5's Spring Framework 6.2.x and throws
+         NoSuchMethodError on ControllerAdviceBean at runtime (known bug:
+         github.com/springdoc/springdoc-openapi/issues/3077). 2.8.x is the
+         last major line still tracking Spring Boot 3.x — springdoc 3.x
+         requires Spring Boot 4, which this project is not on. -->
     <dependency>
       <groupId>org.springdoc</groupId>
       <artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>
-      <version>2.5.0</version>
+      <version>2.8.14</version>
     </dependency>
 
     <!-- Testing -->
@@ -165,12 +170,46 @@
     </dependency>
   </dependencies>
 
-  <build>
+   <build>
     <finalName>sso-service</finalName>
     <plugins>
+      <!-- Without -parameters, compiled classes lose constructor/method
+           parameter names, and Spring can't resolve @RequestParam bindings
+           or constructor-injected beans by name via reflection at runtime
+           (IllegalArgumentException: "Name for argument ... not specified").
+           Required for LoginController's form-bound /login endpoint and for
+           any constructor injection Spring resolves reflectively. -->
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-compiler-plugin</artifactId>
+        <configuration>
+          <parameters>true</parameters>
+        </configuration>
+      </plugin>
       <plugin>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-maven-plugin</artifactId>
+      </plugin>
+      <!-- Without this, *IT.java classes (OAuth2AuthorizeFlowIT,
+           ApplicationRegistrationControllerIT — the Testcontainers-backed
+           tests that actually exercise real login/token flows end-to-end)
+           are silently never run by `mvn verify`, `mvn test`, or CI.
+           Surefire (above, via the default-test execution) only picks up
+           *Test.java; Failsafe is what picks up *IT.java, bound to the
+           integration-test and verify phases so a failure here fails the
+           build the same way a unit test failure does. -->
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-failsafe-plugin</artifactId>
+        <version>3.5.2</version>
+        <executions>
+          <execution>
+            <goals>
+              <goal>integration-test</goal>
+              <goal>verify</goal>
+            </goals>
+          </execution>
+        </executions>
       </plugin>
       <!-- CI gate: fail the build if Lombok ever appears in the dependency tree -->
       <plugin>

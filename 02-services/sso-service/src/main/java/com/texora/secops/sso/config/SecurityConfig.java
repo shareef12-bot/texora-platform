@@ -1,7 +1,9 @@
 package com.texora.secops.sso.config;
 
+import com.texora.secops.iam.token.TokenValidator;
 import com.texora.secops.sso.tenant.TenantResolvingFilter;
 
+import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.annotation.Order;
@@ -28,6 +30,27 @@ import java.util.List;
  */
 @Configuration
 public class SecurityConfig {
+
+    /**
+     * TenantResolvingFilter is registered here as an explicit @Bean — deliberately
+     * NOT annotated @Component on the class itself. It must only run inside the
+     * /api/v1/** Spring Security chain (wired via addFilterAfter below), never as
+     * a global servlet filter across all paths. The accompanying
+     * FilterRegistrationBean bean below disables Spring Boot's automatic filter
+     * registration as a safety net.
+     */
+    @Bean
+    public TenantResolvingFilter tenantResolvingFilter(TokenValidator tokenValidator) {
+        return new TenantResolvingFilter(tokenValidator);
+    }
+
+    @Bean
+    public FilterRegistrationBean<TenantResolvingFilter> tenantResolvingFilterRegistration(
+            TenantResolvingFilter filter) {
+        FilterRegistrationBean<TenantResolvingFilter> registration = new FilterRegistrationBean<>(filter);
+        registration.setEnabled(false); // prevent Boot auto-registering it as a global filter
+        return registration;
+    }
 
     @Bean
     @Order(1)

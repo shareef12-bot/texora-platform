@@ -2,6 +2,17 @@ spring:
   application:
     name: sso-service
 
+  # -----------------------------------------------------------------------
+  # TEMPORARY — see note below. Lets sso-service's own GlobalExceptionHandler
+  # silently win over texora-secops-starter's shared one, so the app can
+  # start while we decide the real fix (keep one, delete the other).
+  # -----------------------------------------------------------------------
+
+  # -----------------------------------------------------------------------
+  # Points at a NEW, separate database (texora_secops) on your existing
+  # Postgres server. This does not touch authdb or any other LMS database
+  # on the same server — just create texora_secops once (see Step 1).
+  # -----------------------------------------------------------------------
   datasource:
     url: ${SSO_DB_URL:jdbc:postgresql://localhost:5432/texora_secops}
     username: ${SSO_DB_USER:sso_app}
@@ -11,22 +22,33 @@ spring:
 
   jpa:
     hibernate:
+      # validate = Hibernate checks entities match the schema Flyway creates.
+      # It does NOT create/alter tables itself — Flyway does that (see below).
       ddl-auto: validate
     open-in-view: false
     properties:
       hibernate:
         default_schema: sso
 
+  # -----------------------------------------------------------------------
+  # Flyway runs src/main/resources/db/migration/V1__init_sso_schema.sql
+  # automatically on startup and builds the whole "sso" schema for you.
+  # You do not run any migration command yourself — this happens on boot.
+  # -----------------------------------------------------------------------
   flyway:
     schemas: sso
     locations: classpath:db/migration
     baseline-on-migrate: true
 
+  # Reuses your existing Redis instance. Fill in host/port if it isn't
+  # running on localhost:6379 already.
   data:
     redis:
       host: ${SSO_REDIS_HOST:localhost}
       port: ${SSO_REDIS_PORT:6379}
 
+  # Reuses your existing Kafka broker. Uses its own topic name
+  # (sso.audit.events) so it won't collide with any LMS topics.
   kafka:
     bootstrap-servers: ${SSO_KAFKA_BOOTSTRAP:localhost:9092}
     topic:
@@ -36,27 +58,35 @@ spring:
     oauth2:
       resourceserver:
         jwt:
-          # Points at this service's own /oauth2/jwks endpoint (self-issued tokens).
-          # Signature, audience ("texora-secops"), and issuer checks are all enabled
-          # by Spring Security's defaults here — none are relaxed. NO custom crypto.
-          issuer-uri: ${SSO_ISSUER_URI:https://sso.texora.internal}
-          jwk-set-uri: ${SSO_JWKS_URI:https://sso.texora.internal/oauth2/jwks}
+          issuer-uri: ${SSO_ISSUER_URI:http://localhost:8080}
+          jwk-set-uri: ${SSO_JWKS_URI:http://localhost:8080/oauth2/jwks}
       authorizationserver:
-        issuer: ${SSO_ISSUER_URI:https://sso.texora.internal}
+        issuer: ${SSO_ISSUER_URI:http://localhost:8080}
       saml2:
         relyingparty:
           registration:
-            # Per-product SAML relying-party registrations are added here as each
-            # product (ilmora, texora-jobs, taskorbit, hrms, crm — ADR D-3) confirms
-            # SAML rather than OIDC for its integration.
             placeholder:
               signing:
                 credentials: []
 
+# -----------------------------------------------------------------------
+# texora.iam.* — required by the IamAutoConfiguration in the shared
+# com.texora.secops.iam client library (see IamProperties.java).
+# Without these, jwtDecoder() fails at startup with "jwkSetUri cannot be
+# empty". Local values point at this service's own localhost endpoint
+# since sso-service acts as both issuer and validator of its own tokens.
+# Override via SSO_JWKS_URI / SSO_ISSUER_URI env vars in real deployments
+# (e.g. https://sso.texora.internal/...) — see k8s configmap/secret.
+# -----------------------------------------------------------------------
 texora:
+  iam:
+    jwks-uri: ${SSO_JWKS_URI:http://localhost:8080/oauth2/jwks}
+    issuer-uri: ${SSO_ISSUER_URI:http://localhost:8080}
+    audience: texora-secops
   sso:
     ldap-service:
       base-url: ${LDAP_SERVICE_BASE_URL:}
+      # Stays true (fail-closed) until the LDAP service is actually built.
       stub-mode: ${LDAP_SERVICE_STUB_MODE:true}
     dc-service:
       base-url: ${DC_SERVICE_BASE_URL:}
