@@ -2,7 +2,6 @@ package com.texora.secops.sso.integration;
 
 import com.texora.secops.sso.domain.Protocol;
 import com.texora.secops.sso.dto.ApplicationRegistrationRequest;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.web.client.TestRestTemplate;
@@ -25,7 +24,10 @@ import static org.assertj.core.api.Assertions.assertThat;
  * does not have network access to. Re-enable once those coordinates resolve
  * in CI.
  */
-@Disabled("requires resolvable texora-secops-platform Platform Foundation artifacts")
+/**
+ * End-to-end: unauthenticated caller must get 401, not a silently-empty 200,
+ * on the application-registration endpoint (shared standards B.6.1/B.6.3).
+ */
 class ApplicationRegistrationControllerIT extends AbstractIntegrationTest {
 
     @Autowired

@@ -14,6 +14,9 @@ RUN java -Djarmode=layertools -jar app.jar extract
 # ── Stage 2: Runtime ──────────────────────────────────────────────────────────
 FROM eclipse-temurin:21-jre-alpine AS runtime
 
+# Patch OS packages to pick up latest security fixes (must run as root, before USER switch)
+RUN apk update && apk upgrade --no-cache
+
 # Security: non-root user (standard B.9)
 RUN addgroup -S secops && adduser -S secops -G secops
 USER secops

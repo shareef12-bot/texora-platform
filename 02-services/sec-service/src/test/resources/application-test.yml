@@ -1,0 +1,33 @@
+spring:
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    properties:
+      hibernate:
+        default_schema: sec
+
+  flyway:
+    enabled: true
+    schemas: sec
+    locations: classpath:db/migration
+
+  kafka:
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+
+  # Disable full OAuth2 auto-config for tests
+sec:
+  mtls:
+    enabled: false
+  audit:
+    chain-verification:
+      cron: "-"  # disable scheduled verification in tests
+  approval:
+    expiry-hours: 1
+
+logging:
+  level:
+    com.texora.secops.sec: DEBUG
+    org.springframework.security: WARN
+    org.flywaydb: WARN

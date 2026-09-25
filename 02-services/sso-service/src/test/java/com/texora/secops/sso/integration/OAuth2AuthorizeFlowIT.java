@@ -2,6 +2,7 @@ package com.texora.secops.sso.integration;
 
 import com.texora.secops.sso.authn.client.LdapBindClient;
 
+
 import com.texora.secops.sso.authn.client.MfaVerificationClient;
 import com.texora.secops.sso.authn.model.BindResult;
 import com.texora.secops.sso.domain.*;
@@ -9,7 +10,6 @@ import com.texora.secops.sso.dto.PolicyResponse;
 import com.texora.secops.sso.repository.*;
 import com.texora.secops.sso.security.PolicyDecisionClient;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -53,7 +53,7 @@ import static org.mockito.Mockito.when;
  * it needs the real Platform Foundation JARs resolvable in CI. The flow
  * itself is otherwise complete and ready to run once those resolve.
  */
-@Disabled("requires resolvable texora-secops-platform Platform Foundation artifacts")
+
 class OAuth2AuthorizeFlowIT extends AbstractIntegrationTest {
 
     @TestConfiguration
@@ -137,15 +137,19 @@ class OAuth2AuthorizeFlowIT extends AbstractIntegrationTest {
         String state = "xyz789";
 
         // Step 1: unauthenticated /oauth2/authorize -> redirected to /login, session established
-        URI authorizeUri = URI.create("/oauth2/authorize"
+        String authorizeUri = "/oauth2/authorize"
                 + "?response_type=code&client_id=" + clientId
                 + "&redirect_uri=" + REDIRECT_URI
                 + "&scope=openid"
                 + "&state=" + state
                 + "&code_challenge=" + codeChallenge
-                + "&code_challenge_method=S256");
+                + "&code_challenge_method=S256";
 
-        ResponseEntity<Void> firstHop = noRedirectClient.getForEntity(authorizeUri, Void.class);
+        HttpHeaders browserHeaders = new HttpHeaders();
+        browserHeaders.setAccept(List.of(MediaType.TEXT_HTML));
+
+        ResponseEntity<Void> firstHop = noRedirectClient.exchange(
+                authorizeUri, HttpMethod.GET, new HttpEntity<>(browserHeaders), Void.class);
         assertThat(firstHop.getStatusCode()).isEqualTo(HttpStatus.FOUND);
         assertThat(firstHop.getHeaders().getLocation().toString()).contains("/login");
         String sessionCookie = firstHop.getHeaders().getFirst(HttpHeaders.SET_COOKIE);

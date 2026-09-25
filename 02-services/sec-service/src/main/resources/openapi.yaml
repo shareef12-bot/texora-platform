@@ -1,0 +1,484 @@
+openapi: 3.0.3
+info:
+  title: Texora SecOps — Security Server (SEC)
+  description: |
+    Central security control plane for the Texora SecOps platform.
+    Every other service calls this synchronously for policy decisions.
+
+    **Default Deny**: Any evaluation that does not reach EXPLICIT_ALLOW returns DENY.
+    Callers must treat any non-200 response as DENY.
+
+    **Two caller classes**:
+    - Human/admin via SSO Bearer token → RbacInterceptor
+    - Service-to-service via mTLS client cert → ServiceAuthInterceptor
+  version: 1.0.0
+
+servers:
+  - url: http://sec-service.texora-secops.svc.cluster.local:8087
+    description: Kubernetes in-cluster
+
+security:
+  - bearerAuth: []
+
+paths:
+  /api/v1/policies/evaluate:
+    post:
+      summary: Evaluate a policy decision (default deny)
+      description: |
+        Most-called endpoint in the platform. Called by DC, LDAP, SSO, FTP, CGI, SIEM, VPN over mTLS.
+
+        Returns one of 5 reason codes:
+        - EXPLICIT_ALLOW → ALLOW
+        - EXPLICIT_DENY → DENY
+        - NO_MATCHING_POLICY → DENY
+        - POLICY_CONFLICT → DENY
+        - EVALUATION_ERROR → DENY
+      operationId: evaluatePolicy
+      security:
+        - mtlsAuth: []
+      tags: [Policy Evaluation]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PolicyEvaluationRequest'
+      responses:
+        '200':
+          description: Evaluation result (ALLOW or DENY — never an exception)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PolicyEvaluationResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+  /api/v1/policies:
+    get:
+      summary: List all policies for tenant
+      operationId: listPolicies
+      security:
+        - bearerAuth: []
+      tags: [Policy Lifecycle]
+      parameters:
+        - $ref: '#/components/parameters/Page'
+        - $ref: '#/components/parameters/Size'
+      responses:
+        '200':
+          description: Paginated policy list
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+
+  /api/v1/security-policy-lifecycle:
+    get:
+      summary: List policies (lifecycle view)
+      operationId: listPoliciesLifecycle
+      security:
+        - bearerAuth: []
+      tags: [Policy Lifecycle]
+      responses:
+        '200':
+          description: Paginated policy list
+    post:
+      summary: Create a new policy
+      operationId: createPolicy
+      security:
+        - bearerAuth: []
+      tags: [Policy Lifecycle]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreatePolicyRequest'
+      responses:
+        '201':
+          description: Policy created
+        '409':
+          $ref: '#/components/responses/Conflict'
+
+  /api/v1/security-policy-lifecycle/{id}/activate:
+    post:
+      summary: Activate a policy version (routes through dual control)
+      operationId: activatePolicyVersion
+      security:
+        - bearerAuth: []
+      tags: [Policy Lifecycle]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Policy version activated
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '422':
+          $ref: '#/components/responses/UnprocessableEntity'
+
+  /api/v1/secret-references:
+    get:
+      summary: List secret references (scoped to caller's owning service)
+      operationId: listSecretReferences
+      tags: [Secret References]
+      parameters:
+        - name: callerService
+          in: query
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Secret references (no material)
+    post:
+      summary: Register a new secret reference
+      operationId: registerSecretReference
+      tags: [Secret References]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RegisterSecretReferenceRequest'
+      responses:
+        '201':
+          description: Reference registered
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '422':
+          $ref: '#/components/responses/UnprocessableEntity'
+
+  /api/v1/secret-references/{logicalName}/resolve:
+    get:
+      summary: Resolve a secret reference (mTLS — returns path+keyId, NEVER material)
+      operationId: resolveSecretReference
+      security:
+        - mtlsAuth: []
+      tags: [Secret References]
+      parameters:
+        - name: logicalName
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: callerService
+          in: query
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Secret reference (vault path + KMS key ID only)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SecretReferenceResponse'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /api/v1/key-rotation-metadata:
+    get:
+      summary: List key rotation records
+      operationId: listKeyRotation
+      tags: [Key Rotation]
+      responses:
+        '200':
+          description: Rotation records
+    post:
+      summary: Schedule a key rotation
+      operationId: scheduleKeyRotation
+      tags: [Key Rotation]
+      responses:
+        '201':
+          description: Rotation scheduled
+
+  /api/v1/privileged-approval-workflow:
+    get:
+      summary: List privileged requests
+      operationId: listPrivilegedRequests
+      tags: [Approval Workflow]
+      responses:
+        '200':
+          description: Privileged requests
+    post:
+      summary: Submit a privileged request (justification mandatory)
+      operationId: submitPrivilegedRequest
+      tags: [Approval Workflow]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SubmitRequestBody'
+      responses:
+        '201':
+          description: Request submitted
+        '400':
+          $ref: '#/components/responses/BadRequest'
+
+  /api/v1/privileged-approval-workflow/{id}/decision:
+    post:
+      summary: Record approval/rejection decision (self-approval rejected with 403)
+      operationId: recordDecision
+      tags: [Approval Workflow]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DecisionBody'
+      responses:
+        '200':
+          description: Decision recorded
+        '403':
+          description: Self-approval rejected (separation of duties)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '422':
+          $ref: '#/components/responses/UnprocessableEntity'
+
+  /api/v1/config:
+    get:
+      summary: Get SEC configuration
+      operationId: getConfig
+      tags: [Config]
+      responses:
+        '200':
+          description: Configuration entries
+    post:
+      summary: Create or update a configuration entry
+      operationId: upsertConfig
+      tags: [Config]
+      responses:
+        '200':
+          description: Config upserted
+
+  /api/v1/audit:
+    get:
+      summary: Search tamper-evident audit events
+      operationId: searchAudit
+      tags: [Audit]
+      parameters:
+        - $ref: '#/components/parameters/Page'
+        - $ref: '#/components/parameters/Size'
+      responses:
+        '200':
+          description: Audit events in reverse sequence order
+
+  /actuator/health:
+    get:
+      summary: Health check (internal only)
+      operationId: health
+      tags: [Actuator]
+      security: []
+      responses:
+        '200':
+          description: UP
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+    mtlsAuth:
+      type: mutualTLS
+
+  parameters:
+    Page:
+      name: page
+      in: query
+      schema:
+        type: integer
+        default: 0
+    Size:
+      name: size
+      in: query
+      schema:
+        type: integer
+        default: 20
+
+  responses:
+    BadRequest:
+      description: Malformed request
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    Unauthorized:
+      description: Missing or invalid bearer token
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    Forbidden:
+      description: Insufficient role or ownership violation
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    NotFound:
+      description: Resource not found
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    Conflict:
+      description: Resource already exists
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    UnprocessableEntity:
+      description: Business rule violation
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+
+  schemas:
+    PolicyEvaluationRequest:
+      type: object
+      required: [callerService, subject, resource, action]
+      properties:
+        callerService:
+          type: string
+          example: sso
+        subject:
+          type: object
+          properties:
+            type:
+              type: string
+              example: USER
+            id:
+              type: string
+              format: uuid
+        resource:
+          type: string
+          example: sso:session
+        action:
+          type: string
+          example: create
+        context:
+          type: object
+          additionalProperties: true
+
+    PolicyEvaluationResponse:
+      type: object
+      properties:
+        decision:
+          type: string
+          enum: [ALLOW, DENY]
+        reason:
+          type: string
+          enum: [EXPLICIT_ALLOW, EXPLICIT_DENY, NO_MATCHING_POLICY, POLICY_CONFLICT, EVALUATION_ERROR]
+        policyVersionId:
+          type: string
+          format: uuid
+        evaluatedAt:
+          type: string
+          format: date-time
+
+    SecretReferenceResponse:
+      type: object
+      description: Vault path + KMS key ID ONLY — no secret material
+      properties:
+        referenceId:
+          type: string
+          format: uuid
+        logicalName:
+          type: string
+        vaultPath:
+          type: string
+        kmsKeyId:
+          type: string
+
+    RegisterSecretReferenceRequest:
+      type: object
+      required: [logicalName, vaultPath, owningService]
+      properties:
+        logicalName:
+          type: string
+        vaultPath:
+          type: string
+        kmsKeyId:
+          type: string
+        owningService:
+          type: string
+        classification:
+          type: string
+          default: CONFIDENTIAL
+
+    CreatePolicyRequest:
+      type: object
+      required: [name, subjectType, resource, action, ownerTeam]
+      properties:
+        name:
+          type: string
+        subjectType:
+          type: string
+        resource:
+          type: string
+        action:
+          type: string
+        ownerTeam:
+          type: string
+
+    SubmitRequestBody:
+      type: object
+      required: [requestType, targetRef, justification]
+      properties:
+        requestType:
+          type: string
+        targetRef:
+          type: string
+        justification:
+          type: string
+          description: Mandatory — blank justification is rejected
+
+    DecisionBody:
+      type: object
+      required: [decision]
+      properties:
+        decision:
+          type: string
+          enum: [APPROVED, REJECTED]
+        comments:
+          type: string
+
+    ErrorResponse:
+      type: object
+      properties:
+        timestamp:
+          type: string
+          format: date-time
+        status:
+          type: integer
+        error:
+          type: string
+        code:
+          type: string
+        message:
+          type: string
+        traceId:
+          type: string

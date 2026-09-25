@@ -10,7 +10,8 @@ import jakarta.persistence.Table;
 import java.time.Instant;
 import java.util.Objects;
 import java.util.UUID;
-
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
 /**
  * Append-only audit record. Never updated or deleted by the application —
  * the application DB role is granted no UPDATE/DELETE on this table.
@@ -45,7 +46,7 @@ public class SsoAuditEvent {
 
     @Column(name = "occurred_at", nullable = false)
     private Instant occurredAt;
-
+    @JdbcTypeCode(SqlTypes.JSON)
     @Column(name = "payload", columnDefinition = "jsonb")
     private String payload;
 

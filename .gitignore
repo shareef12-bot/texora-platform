@@ -27,3 +27,4 @@ application-local.yml
 
 # Docker
 docker-compose.override.yml
+"*.zip" 

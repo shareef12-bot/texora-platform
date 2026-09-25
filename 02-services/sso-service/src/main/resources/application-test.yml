@@ -2,15 +2,31 @@ spring:
   jpa:
     hibernate:
       ddl-auto: validate
+    properties:
+      hibernate:
+        default_schema: sec
+
   flyway:
-    schemas: sso
+    enabled: true
+    schemas: sec
     locations: classpath:db/migration
 
-texora:
-  sso:
-    ldap-service:
-      stub-mode: true
-    dc-service:
-      stub-mode: true
-    sec-service:
-      base-url: http://localhost:${wiremock.server.port:9999}
+  kafka:
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+
+sec:
+  mtls:
+    enabled: false
+  audit:
+    chain-verification:
+      cron: "-"  # disable scheduled verification in tests
+  approval:
+    expiry-hours: 1
+
+logging:
+  level:
+    com.texora.secops.sec: DEBUG
+    org.springframework.security: WARN
+    org.flywaydb: WARN

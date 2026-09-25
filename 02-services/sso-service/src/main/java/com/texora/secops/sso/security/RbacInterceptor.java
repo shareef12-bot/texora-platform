@@ -16,8 +16,23 @@ import java.util.Map;
  * B.6.2). Uses the shared IAM client library to check the caller's roles
  * against the required role for the endpoint being invoked. Any ambiguity —
  * unknown endpoint, missing role claim, IAM client error — results in DENY.
+ *
+ * <p>Explicit bean name "ssoRbacInterceptor" — texora-iam-client's own
+ * IamAutoConfiguration also registers a bean literally named
+ * "rbacInterceptor" (its @Bean factory method name), which is Spring's
+ * default component-scan name for THIS class too, causing a
+ * BeanDefinitionOverrideException on startup if left unqualified.
+ *
+ * <p>NOTE: texora-iam-client's javadoc says services should use its
+ * @RequiresRole annotation instead of registering their own interceptor.
+ * This class predates that guidance (or diverges from it intentionally —
+ * unconfirmed). Renaming unblocks startup; it does not resolve the
+ * duplicate-enforcement question — both interceptors will now run on
+ * /api/v1/** once this collision is fixed. Worth a real decision later:
+ * migrate to @RequiresRole and remove this class, or keep this one and
+ * exclude the generic interceptor for this service.
  */
-@Component
+@Component("ssoRbacInterceptor")
 public class RbacInterceptor implements HandlerInterceptor {
 
     /** Endpoint-prefix to required-role mapping, per LLD §6.1 / shared standards. */

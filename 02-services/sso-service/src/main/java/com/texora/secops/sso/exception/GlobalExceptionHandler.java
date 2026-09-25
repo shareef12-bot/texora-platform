@@ -1,6 +1,7 @@
 package com.texora.secops.sso.exception;
 
 import com.texora.secops.sso.dto.ErrorResponse;
+import org.springframework.stereotype.Component;
 import jakarta.servlet.http.HttpServletRequest;
 import org.slf4j.MDC;
 import org.springframework.http.HttpStatus;
@@ -13,8 +14,9 @@ import java.time.Instant;
 
 /** Central mapping of exceptions to the standard error body (shared standards B.7). */
 @RestControllerAdvice
+@Component("ssoGlobalExceptionHandler")
 public class GlobalExceptionHandler {
-
+	 private static final org.slf4j.Logger LOGGER = org.slf4j.LoggerFactory.getLogger(GlobalExceptionHandler.class);
     @ExceptionHandler(RbacDeniedException.class)
     public ResponseEntity<ErrorResponse> handleRbacDenied(RbacDeniedException e, HttpServletRequest req) {
         return build(HttpStatus.FORBIDDEN, "RBAC_DENIED", e.getMessage());
@@ -44,6 +46,7 @@ public class GlobalExceptionHandler {
     public ResponseEntity<ErrorResponse> handleUnexpected(Exception e) {
         // Fail closed: an unmapped exception is a 500, never treated as an
         // implicit ALLOW anywhere upstream of this handler.
+        LOGGER.error("Unhandled exception on {} {}", "request", e.getMessage(), e);
         return build(HttpStatus.INTERNAL_SERVER_ERROR, "INTERNAL_ERROR", "An unexpected error occurred");
     }
 

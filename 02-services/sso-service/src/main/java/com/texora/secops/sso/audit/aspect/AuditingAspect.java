@@ -25,9 +25,18 @@ import java.util.UUID;
  * method succeeds, throws, or the underlying business logic itself denies
  * the action. This is what makes "audit event ALWAYS" (LLD §5.3 step 6, §9.3)
  * structural rather than a convention every developer has to remember.
+ *
+ * <p>Explicit bean name "ssoAuditingAspect" — the shared texora-audit-sdk's
+ * AuditAutoConfiguration also registers a bean literally named
+ * "auditingAspect" (its @Bean factory method name), which is Spring's
+ * default component-scan name for THIS class too (decapitalized simple
+ * class name), causing a BeanDefinitionOverrideException on startup if
+ * left unqualified. Both beans are legitimately needed — this one wraps
+ * @Audited SSO methods, the SDK's is a different generic aspect — so the
+ * fix is disambiguating the name, not removing either bean.
  */
 @Aspect
-@Component
+@Component("ssoAuditingAspect")
 public class AuditingAspect {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(AuditingAspect.class);
