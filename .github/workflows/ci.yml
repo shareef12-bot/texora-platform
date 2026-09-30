@@ -181,7 +181,7 @@ jobs:
       # still refreshes; restore-keys falls back to the most recent cache
       # available if today's exact key hasn't been written yet.
       - name: Cache NVD vulnerability database
-        uses: actions/cache@v4
+        uses: actions/cache@v6
         with:
           path: ~/.dependency-check-data
           key: nvd-db-${{ runner.os }}-${{ steps.date.outputs.today }}
