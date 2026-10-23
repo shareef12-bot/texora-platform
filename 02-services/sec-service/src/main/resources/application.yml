@@ -5,7 +5,7 @@ spring:
   datasource:
     url: ${DB_URL:jdbc:postgresql://localhost:5432/texora_secops}
     username: ${DB_USERNAME:sec_app}
-    password: ${DB_PASSWORD:Shareef@1234}
+    password: ${DB_PASSWORD:}
     hikari:
       maximum-pool-size: 20
       connection-timeout: 5000
@@ -86,6 +86,13 @@ sec:
   mtls:
     enabled: ${MTLS_ENABLED:true}
     trusted-services: ${MTLS_TRUSTED_SERVICES:sso,dc,ldap,ftp,cgi,siem,vpn}
+
+texora:
+  iam:
+    jwks-uri: ${SSO_JWKS_URI:http://localhost:8080/realms/texora/protocol/openid-connect/certs}
+    issuer-uri: ${SSO_ISSUER_URI:http://localhost:8080/realms/texora}
+    rbac:
+      enabled: false   # SEC registers its own RbacInterceptor via WebMvcConfig
 
 logging:
   level:
