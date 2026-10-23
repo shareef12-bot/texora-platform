@@ -1,0 +1,22 @@
+# Integration-test profile — overrides for Docker containers wired by @DynamicPropertySource
+# Auth is bypassed: RbacInterceptor is replaced with IntegrationTestRbacInterceptor
+spring:
+  jpa:
+    hibernate:
+      ddl-auto: none
+  flyway:
+    enabled: true
+    schemas: ldap
+
+# Disable real IAM token validation in integration tests
+ldap:
+  sec:
+    policy-endpoint: http://localhost:9999/policy  # unreachable — PolicyDecisionClient returns false
+  engine:
+    host: STUB
+
+# Logging — verbose for integration test diagnosis
+logging:
+  level:
+    com.texora.secops.ldap: DEBUG
+    org.springframework.kafka: WARN

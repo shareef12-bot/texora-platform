@@ -1,0 +1,480 @@
+openapi: 3.0.3
+info:
+  title: Texora SecOps - SOC/SIEM Log Server
+  version: "1.0.0"
+  description: >
+    Platform-wide audit event ingestion, normalization, correlation and alerting.
+    This file is the checked-in D-004 deliverable; the live, always-current spec
+    is also served at GET /api/v1/openapi (Swagger UI at /api/v1/docs).
+servers:
+  - url: https://siem.texora.internal/api/v1
+    description: Production
+tags:
+  - name: log-ingestion
+  - name: correlation-rules
+  - name: alert-lifecycle
+  - name: search
+  - name: config
+  - name: policies
+  - name: audit
+
+security:
+  - sso-bearer: []
+
+paths:
+  /log-ingestion:
+    get:
+      tags: [log-ingestion]
+      summary: List registered ingestion sources
+      security: [{ sso-bearer: [siem.ingestion.read] }]
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: "#/components/schemas/IngestionSourceResponse" }
+    post:
+      tags: [log-ingestion]
+      summary: Register a new ingestion source
+      security: [{ sso-bearer: [siem.ingestion.write] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/IngestionSourceRequest" }
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/IngestionSourceResponse" }
+        "409": { $ref: "#/components/responses/Conflict" }
+
+  /log-ingestion/{id}:
+    get:
+      tags: [log-ingestion]
+      summary: Get an ingestion source
+      security: [{ sso-bearer: [siem.ingestion.read] }]
+      parameters:
+        - $ref: "#/components/parameters/IdPathParam"
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/IngestionSourceResponse" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+        "404": { $ref: "#/components/responses/NotFound" }
+
+  /log-ingestion/{id}/status:
+    put:
+      tags: [log-ingestion]
+      summary: Suspend/reactivate/revoke an ingestion source
+      security: [{ sso-bearer: [siem.ingestion.write] }]
+      parameters:
+        - $ref: "#/components/parameters/IdPathParam"
+        - name: status
+          in: query
+          required: true
+          schema: { type: string, enum: [ACTIVE, SUSPENDED, REVOKED] }
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/IngestionSourceResponse" }
+
+  /ingest/http/{sourceKey}:
+    post:
+      tags: [log-ingestion]
+      summary: Raw event ingestion (mTLS-authenticated, NOT an SSO-token endpoint)
+      security: []
+      parameters:
+        - name: sourceKey
+          in: path
+          required: true
+          schema: { type: string }
+        - name: X-Client-Cert-CN
+          in: header
+          required: false
+          schema: { type: string }
+          description: Verified client certificate CN, forwarded by the mTLS-terminating ingress.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { type: string }
+      responses:
+        "202": { description: Accepted }
+        "401": { description: Unauthenticated - unknown source or certificate mismatch }
+        "403": { description: Source registered but not ACTIVE }
+
+  /correlation-rules:
+    get:
+      tags: [correlation-rules]
+      summary: List correlation rules
+      security: [{ sso-bearer: [siem.rule.read] }]
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: "#/components/schemas/CorrelationRuleResponse" }
+    post:
+      tags: [correlation-rules]
+      summary: Submit a new rule, or a request to disable an existing APPROVED rule
+      security: [{ sso-bearer: [siem.rule.write] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/CorrelationRuleRequest" }
+      responses:
+        "201":
+          description: Created (status PENDING_APPROVAL)
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/CorrelationRuleResponse" }
+        "422": { $ref: "#/components/responses/UnprocessableEntity" }
+
+  /correlation-rules/{id}:
+    get:
+      tags: [correlation-rules]
+      summary: Get a correlation rule
+      security: [{ sso-bearer: [siem.rule.read] }]
+      parameters:
+        - $ref: "#/components/parameters/IdPathParam"
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/CorrelationRuleResponse" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+
+  /correlation-rules/{id}/history:
+    get:
+      tags: [correlation-rules]
+      summary: Full change-audit history for a rule (submissions, approvals, rejections, disables)
+      security: [{ sso-bearer: [siem.rule.read] }]
+      parameters:
+        - $ref: "#/components/parameters/IdPathParam"
+      responses:
+        "200": { description: OK }
+
+  /correlation-rules/{id}/decision:
+    post:
+      tags: [correlation-rules]
+      summary: Approve or reject a pending rule change (two-person approval - submitter cannot approve)
+      security: [{ sso-bearer: [siem.rule.approve] }]
+      parameters:
+        - $ref: "#/components/parameters/IdPathParam"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/RuleDecisionRequest" }
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/CorrelationRuleResponse" }
+        "403":
+          description: Forbidden - includes the self-approval-denied case
+        "409":
+          description: Not pending approval
+
+  /alert-lifecycle:
+    get:
+      tags: [alert-lifecycle]
+      summary: List alerts for the caller's tenant
+      security: [{ sso-bearer: [siem.alert.read] }]
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: "#/components/schemas/AlertResponse" }
+
+  /alert-lifecycle/{id}:
+    get:
+      tags: [alert-lifecycle]
+      summary: Get an alert
+      security: [{ sso-bearer: [siem.alert.read] }]
+      parameters:
+        - $ref: "#/components/parameters/IdPathParam"
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/AlertResponse" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+
+  /alert-lifecycle/{id}/history:
+    get:
+      tags: [alert-lifecycle]
+      summary: Full transition history for an alert
+      security: [{ sso-bearer: [siem.alert.read] }]
+      parameters:
+        - $ref: "#/components/parameters/IdPathParam"
+      responses:
+        "200": { description: OK }
+
+  /alert-lifecycle/{id}/transition:
+    post:
+      tags: [alert-lifecycle]
+      summary: "Move an alert through its lifecycle: OPEN -> TRIAGED -> ESCALATED -> CLOSED"
+      security: [{ sso-bearer: [siem.alert.write] }]
+      parameters:
+        - $ref: "#/components/parameters/IdPathParam"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/AlertTransitionRequest" }
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/AlertResponse" }
+        "422":
+          description: Illegal transition for the alert's current status
+
+  /events/search:
+    get:
+      tags: [search]
+      summary: Tenant/RBAC-scoped search across the normalized event corpus
+      security: [{ sso-bearer: [siem.search.read] }]
+      parameters:
+        - name: tenantScope
+          in: query
+          required: false
+          schema: { type: string, format: uuid }
+          description: Must equal the caller's own tenant if supplied - anything else is 403.
+        - name: eventType
+          in: query
+          schema: { type: string }
+        - name: sourceService
+          in: query
+          schema: { type: string }
+        - name: productId
+          in: query
+          schema: { type: string }
+        - name: page
+          in: query
+          schema: { type: integer, default: 0 }
+        - name: pageSize
+          in: query
+          schema: { type: integer, default: 50 }
+      responses:
+        "200":
+          description: OK (degraded=true if the search backend was impaired)
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/NormalizedEventPage" }
+        "403":
+          description: Forbidden - cross-tenant query attempt, or SEC policy denial
+
+  /config:
+    get:
+      tags: [config]
+      security: [{ sso-bearer: [siem.config.read] }]
+      responses:
+        "200": { description: OK }
+    post:
+      tags: [config]
+      security: [{ sso-bearer: [siem.config.write] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/ConfigItemRequest" }
+      responses:
+        "200": { description: OK }
+
+  /policies:
+    get:
+      tags: [policies]
+      summary: Policies applicable to the caller's tenant (proxied from SEC)
+      security: [{ sso-bearer: [siem.policy.read] }]
+      responses:
+        "200": { description: OK }
+        "504": { description: SEC unreachable }
+
+  /audit:
+    get:
+      tags: [audit]
+      summary: SIEM's own administrative audit trail
+      security: [{ sso-bearer: [siem.audit.read] }]
+      parameters:
+        - name: action
+          in: query
+          schema: { type: string }
+        - name: page
+          in: query
+          schema: { type: integer, default: 0 }
+        - name: pageSize
+          in: query
+          schema: { type: integer, default: 50 }
+      responses:
+        "200": { description: OK }
+
+components:
+  securitySchemes:
+    sso-bearer:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  parameters:
+    IdPathParam:
+      name: id
+      in: path
+      required: true
+      schema: { type: string, format: uuid }
+
+  responses:
+    Forbidden:
+      description: Forbidden (RBAC_DENIED or cross-tenant access)
+      content:
+        application/json:
+          schema: { $ref: "#/components/schemas/ErrorResponse" }
+    NotFound:
+      description: Not found
+      content:
+        application/json:
+          schema: { $ref: "#/components/schemas/ErrorResponse" }
+    Conflict:
+      description: Conflict
+      content:
+        application/json:
+          schema: { $ref: "#/components/schemas/ErrorResponse" }
+    UnprocessableEntity:
+      description: Business rule failure
+      content:
+        application/json:
+          schema: { $ref: "#/components/schemas/ErrorResponse" }
+
+  schemas:
+    ErrorResponse:
+      type: object
+      properties:
+        timestamp: { type: string, format: date-time }
+        status: { type: integer }
+        error: { type: string }
+        code: { type: string }
+        message: { type: string }
+        traceId: { type: string }
+
+    IngestionSourceRequest:
+      type: object
+      required: [name, protocol, mtlsCertRef]
+      properties:
+        name: { type: string }
+        protocol: { type: string, enum: [SYSLOG, HTTP, KAFKA] }
+        mtlsCertRef: { type: string }
+        productId: { type: string }
+
+    IngestionSourceResponse:
+      type: object
+      properties:
+        id: { type: string, format: uuid }
+        name: { type: string }
+        protocol: { type: string, enum: [SYSLOG, HTTP, KAFKA] }
+        status: { type: string, enum: [ACTIVE, SUSPENDED, REVOKED] }
+        productId: { type: string }
+        registeredAt: { type: string, format: date-time }
+
+    CorrelationRuleRequest:
+      type: object
+      properties:
+        name: { type: string }
+        ruleDefinition:
+          type: string
+          description: JSON-encoded RuleDefinition (conditions[], severity)
+        targetRuleId:
+          type: string
+          format: uuid
+          description: Set only when requesting to disable an existing APPROVED rule
+
+    CorrelationRuleResponse:
+      type: object
+      properties:
+        id: { type: string, format: uuid }
+        name: { type: string }
+        ruleDefinition: { type: string }
+        status: { type: string, enum: [DRAFT, PENDING_APPROVAL, APPROVED, DISABLED] }
+        submittedBy: { type: string, format: uuid }
+        targetRuleId: { type: string, format: uuid, nullable: true }
+        decisionBy: { type: string, format: uuid, nullable: true }
+        decisionAt: { type: string, format: date-time, nullable: true }
+        createdAt: { type: string, format: date-time }
+        updatedAt: { type: string, format: date-time }
+
+    RuleDecisionRequest:
+      type: object
+      required: [decision]
+      properties:
+        decision: { type: string, enum: [APPROVE, REJECT] }
+        notes: { type: string }
+
+    AlertResponse:
+      type: object
+      properties:
+        id: { type: string, format: uuid }
+        correlationRuleId: { type: string, format: uuid }
+        triggeredAt: { type: string, format: date-time }
+        severity: { type: string, enum: [LOW, MEDIUM, HIGH, CRITICAL] }
+        status: { type: string, enum: [OPEN, TRIAGED, ESCALATED, CLOSED] }
+        triggeringEventId: { type: string }
+        summary: { type: string }
+
+    AlertTransitionRequest:
+      type: object
+      required: [toStatus]
+      properties:
+        toStatus: { type: string, enum: [OPEN, TRIAGED, ESCALATED, CLOSED] }
+        notes: { type: string }
+
+    NormalizedEventDto:
+      type: object
+      properties:
+        id: { type: string }
+        sourceService: { type: string }
+        originalEventId: { type: string }
+        eventType: { type: string }
+        actor: { type: string }
+        target: { type: string }
+        outcome: { type: string }
+        occurredAt: { type: string, format: date-time }
+        productId: { type: string }
+        ingestedAt: { type: string, format: date-time }
+
+    NormalizedEventPage:
+      type: object
+      properties:
+        items:
+          type: array
+          items: { $ref: "#/components/schemas/NormalizedEventDto" }
+        page: { type: integer }
+        pageSize: { type: integer }
+        totalElements: { type: integer, format: int64 }
+        degraded:
+          type: boolean
+          description: True when this result came from a degraded search path (backend impaired)
+
+    ConfigItemRequest:
+      type: object
+      required: [key, value]
+      properties:
+        key: { type: string }
+        value: { type: string }

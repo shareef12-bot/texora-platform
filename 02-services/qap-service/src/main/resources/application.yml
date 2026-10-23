@@ -1,0 +1,86 @@
+server:
+  port: 8090
+  shutdown: graceful
+
+spring:
+  application:
+    name: qap-service
+
+  datasource:
+    url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://localhost:5432/texora}
+    username: ${SPRING_DATASOURCE_USERNAME:texora}
+    password: ${SPRING_DATASOURCE_PASSWORD:texora}
+    hikari:
+      maximum-pool-size: 10
+      minimum-idle: 2
+      connection-timeout: 30000
+
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    properties:
+      hibernate:
+        default_schema: qap
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+        jdbc:
+          time_zone: UTC
+    open-in-view: false
+
+  flyway:
+    enabled: true
+    schemas: qap
+    locations: classpath:db/migration
+    baseline-on-migrate: true
+
+  kafka:
+    bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS:localhost:9092}
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.apache.kafka.common.serialization.StringSerializer
+      acks: all
+      retries: 3
+
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: ${IAM_ISSUER_URI:http://iam-service/realms/texora}
+
+# QAP service configuration
+qap:
+  sec:
+    base-url: ${SEC_BASE_URL:http://sec-service}
+
+  siem:
+    query-url: ${SIEM_QUERY_URL:http://siem-service/api/v1/events/search}
+
+  flaky:
+    quarantine-threshold: ${QAP_FLAKY_THRESHOLD:0.30}
+
+  test-runner:
+    timeout-seconds: ${QAP_TEST_TIMEOUT:30}
+
+# Actuator
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics,prometheus
+  endpoint:
+    health:
+      show-details: when-authorized
+
+# Springdoc OpenAPI (pitfall #13: use 2.8.x for Spring Boot 3.5.x)
+springdoc:
+  api-docs:
+    path: /v3/api-docs
+  swagger-ui:
+    path: /swagger-ui.html
+
+# Logging
+logging:
+  level:
+    com.texora.qap: INFO
+    org.springframework.security: WARN
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] [%X{traceId}] %-5level %logger{36} - %msg%n"

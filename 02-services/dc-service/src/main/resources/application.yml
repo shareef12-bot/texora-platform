@@ -1,0 +1,95 @@
+# dc-service configuration. NO secrets here (B.6.6): DB password, Kafka creds etc. come from the environment / SEC.
+server:
+  port: ${DC_SERVER_PORT:8085}          # local dev: run with --server.port=8085 (pitfall #12)
+  shutdown: graceful
+
+spring:
+  application:
+    name: dc-service
+  datasource:
+    url: ${DC_DB_URL:jdbc:postgresql://localhost:5432/texora}
+    username: ${DC_DB_USER:dc_app}
+    password: ${DC_DB_PASSWORD}          # intentionally NO default
+  jpa:
+    open-in-view: false
+    hibernate:
+      ddl-auto: validate
+    properties:
+      hibernate:
+        default_schema: dc
+  flyway:
+    enabled: true
+    schemas: dc
+    default-schema: dc
+    create-schemas: true
+    locations: classpath:db/migration
+  kafka:
+    bootstrap-servers: ${DC_KAFKA_BOOTSTRAP:localhost:9092}
+    producer:
+      acks: all
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.apache.kafka.common.serialization.StringSerializer
+      properties:
+        enable.idempotence: true
+        delivery.timeout.ms: 15000
+        max.block.ms: 5000
+  # Needed by the shared TokenValidator's JwtDecoder if the iam-client does not configure its own.
+  # UNSURE - see README "Unverified shared-library assumptions".
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: ${SSO_ISSUER_URI:}
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics
+  endpoint:
+    health:
+      probes:
+        enabled: true
+  tracing:
+    sampling:
+      probability: 1.0
+  otlp:
+    tracing:
+      endpoint: ${OTEL_EXPORTER_OTLP_TRACES_ENDPOINT:http://localhost:4318/v1/traces}
+
+springdoc:
+  api-docs:
+    enabled: ${DC_API_DOCS_ENABLED:true}   # set false in production; /v3/api-docs is outside /api/v1 and unauthenticated
+  swagger-ui:
+    enabled: ${DC_API_DOCS_ENABLED:true}
+
+dc:
+  topics:
+    audit: dc.audit.events
+    sync: dc.sync.requested
+    sync-dlq: dc.sync.requested.dlq
+  audit:
+    retry-interval-ms: 15000
+    retry-batch-size: 100
+  sync:
+    max-attempts: 5
+    backoff-base-seconds: 5
+    backoff-max-seconds: 600
+    initial-delay-seconds: 30
+    retry-interval-ms: 10000
+    retry-batch-size: 100
+    signer: stub                  # STUB = ephemeral in-memory HMAC key. Replace with SEC/KMS-backed signer. See README.
+  hrms:
+    adapter: stub                 # STUB = in-memory fixture data. HRMS has no API/event yet (ADR D-2). See README.
+    sync:
+      enabled: false
+      interval-ms: 300000
+      tenant-ids: ""              # comma-separated tenant UUIDs for the scheduled pull
+  policy:
+    sec-consult-enabled: false    # when true, local ALLOW is additionally confirmed by SEC; SEC failure => DENY
+  sec:
+    base-url: ${SEC_BASE_URL:}
+    timeout-ms: 2000
+  config:
+    repeated-rejection-threshold: 3
+    repeated-rejection-window-hours: 24

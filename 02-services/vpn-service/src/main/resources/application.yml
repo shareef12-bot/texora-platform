@@ -1,0 +1,91 @@
+# Local/dev defaults. NO secrets in this file: DB credentials, keystore passwords etc. come from the environment
+# (in Kubernetes: injected from SEC/KMS-backed secrets), never from source control.
+server:
+  port: ${VPN_SERVER_PORT:8088}          # local port 8088 (override: --server.port=NNNN)
+
+spring:
+  application:
+    name: vpn-service
+  datasource:
+    url: ${VPN_DB_URL:jdbc:postgresql://localhost:5432/texora}
+    username: ${VPN_DB_USER:vpn_app}
+    password: ${VPN_DB_PASSWORD:}
+  jpa:
+    open-in-view: false
+    hibernate:
+      ddl-auto: validate
+    properties:
+      hibernate:
+        default_schema: vpn
+  flyway:
+    enabled: true
+    schemas: vpn
+    default-schema: vpn
+    create-schemas: true
+  kafka:
+    bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS:localhost:9092}
+    producer:
+      acks: all
+      properties:
+        enable.idempotence: true
+        delivery.timeout.ms: 10000
+        request.timeout.ms: 5000
+        max.block.ms: 3000
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          # ASSUMPTION: how texora-iam-client locates the SSO signing keys. Confirm against sso-service config.
+          issuer-uri: ${SSO_ISSUER_URI:http://localhost:8081}
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,prometheus
+  endpoint:
+    health:
+      probes:
+        enabled: true
+      group:
+        readiness:
+          include: readinessState,db        # dataplane/SEC outages must NOT take the control plane out of rotation
+  tracing:
+    sampling:
+      probability: 1.0
+
+springdoc:
+  api-docs:
+    enabled: true
+
+vpn:
+  gateway:
+    adapter: stub                          # 'prod' profile sets 'vendor'. The stub is NOT a VPN.
+  mfa:
+    stub-enabled: true                     # 'prod' profile sets false. The stub accepts a fixed code.
+  scheduling:
+    enabled: true
+    tick-ms: 5000
+    watchdog-ms: 15000
+  sec:
+    base-url: ${VPN_SEC_URL:http://localhost:8083}   # sec-stub local port
+    ssl-bundle: ""                                    # REQUIRED (mTLS) under 'prod'
+    timeout-ms: 2000
+    revalidation-attempts: 2
+    revalidation-deadline-ms: 5000
+  dc:
+    base-url: ${VPN_DC_URL:http://localhost:8085}    # dc local port
+    ssl-bundle: ""
+    timeout-ms: 2000
+  session:
+    max-minutes: 480
+    revalidation-interval-seconds: 60
+    max-unverified-seconds: 300
+    identity-staleness-seconds: 300
+    establish-grace-seconds: 30
+    claim-lease-seconds: 30
+    teardown-retry-seconds: 10
+  dataplane:
+    allowed-client-subjects: []            # empty = every dataplane callback rejected (fail closed)
+  audit:
+    topic: vpn.audit.events

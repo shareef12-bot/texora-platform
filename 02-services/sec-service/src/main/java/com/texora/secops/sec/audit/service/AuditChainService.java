@@ -29,6 +29,14 @@ import java.util.concurrent.atomic.AtomicInteger;
  *
  * <p>A scheduled job re-verifies the chain and records the result as a metric
  * so alerting rules can fire on any discontinuity.</p>
+ *
+ * <p><strong>Why this is SEC's own writer and not the shared Audit SDK:</strong> the hash chain
+ * (each event's hash covers the previous event's hash, verified on a schedule) is SEC's own
+ * feature per the SEC design; it is not part of the ordinary audit emission that the shared SDK
+ * provides to every service. This class therefore stays, but it is an ADDITION to the shared mechanism, not a replacement: SEC's mutating service
+ * methods also carry the shared {@code @Audited}. It keeps the guarantee pitfall 11 requires of a
+ * service-specific audit writer: durable local write first (DB, same transaction), then Kafka
+ * publish (failure logged, event already persisted).</p>
  */
 @Service
 public class AuditChainService {

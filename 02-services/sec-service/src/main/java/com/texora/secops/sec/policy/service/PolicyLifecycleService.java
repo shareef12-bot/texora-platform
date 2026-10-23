@@ -1,5 +1,6 @@
 package com.texora.secops.sec.policy.service;
 
+import com.texora.secops.audit.annotation.Audited;
 import com.texora.secops.sec.approval.service.PrivilegedApprovalService;
 import com.texora.secops.sec.policy.domain.SecPolicy;
 import com.texora.secops.sec.policy.domain.SecPolicyVersion;
@@ -47,6 +48,7 @@ public class PolicyLifecycleService {
                         HttpStatus.NOT_FOUND, "Policy not found: " + policyId));
     }
 
+    @Audited(action = "POLICY_CREATED", targetType = "POLICY")
     @Transactional
     public SecPolicy createPolicy(UUID tenantId, String name, String subjectType,
                                    String resource, String action, String ownerTeam) {
@@ -57,6 +59,7 @@ public class PolicyLifecycleService {
         return saved;
     }
 
+    @Audited(action = "POLICY_VERSION_CREATED", targetType = "POLICY_VERSION")
     @Transactional
     public SecPolicyVersion createPolicyVersion(UUID tenantId, UUID policyId,
                                                  String effect, Map<String, Object> conditions,
@@ -93,6 +96,7 @@ public class PolicyLifecycleService {
         return saved;
     }
 
+    @Audited(action = "POLICY_VERSION_ACTIVATED", targetType = "POLICY_VERSION")
     @Transactional
     public SecPolicyVersion activateVersion(UUID tenantId, UUID versionId, UUID activatedBy) {
         SecPolicyVersion version = versionRepository.findByIdAndTenantId(versionId, tenantId)

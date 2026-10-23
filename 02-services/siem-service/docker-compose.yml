@@ -1,0 +1,63 @@
+# Local development stack only - not for production use.
+version: "3.8"
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: texora_secops
+      POSTGRES_USER: siem_app
+      POSTGRES_PASSWORD: devpassword
+    ports:
+      - "5432:5432"
+    volumes:
+      - siem_postgres_data:/var/lib/postgresql/data
+
+  zookeeper:
+    image: confluentinc/cp-zookeeper:7.6.1
+    environment:
+      ZOOKEEPER_CLIENT_PORT: 2181
+
+  kafka:
+    image: confluentinc/cp-kafka:7.6.1
+    depends_on:
+      - zookeeper
+    ports:
+      - "9092:9092"
+    environment:
+      KAFKA_BROKER_ID: 1
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:29092,PLAINTEXT_HOST://localhost:9092
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT
+      KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_AUTO_CREATE_TOPICS_ENABLE: "true"
+
+  opensearch:
+    image: opensearchproject/opensearch:2.15.0
+    environment:
+      - discovery.type=single-node
+      - plugins.security.disabled=true
+      - "OPENSEARCH_JAVA_OPTS=-Xms512m -Xmx512m"
+    ports:
+      - "9200:9200"
+
+  siem-service:
+    build: .
+    depends_on:
+      - postgres
+      - kafka
+      - opensearch
+    ports:
+      - "8086:8086"
+    environment:
+      SPRING_PROFILES_ACTIVE: dev
+      SIEM_DB_URL: jdbc:postgresql://postgres:5432/texora_secops
+      SIEM_DB_USER: siem_app
+      SIEM_DB_PASSWORD: devpassword
+      SIEM_KAFKA_BOOTSTRAP: kafka:29092
+      SIEM_SEARCH_BASE_URL: http://opensearch:9200
+      SIEM_SYSLOG_ENABLED: "false"
+
+volumes:
+  siem_postgres_data:

@@ -1,0 +1,21 @@
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: {{ .Chart.Name }}
+  namespace: {{ .Values.namespace }}
+spec:
+  podSelector:
+    matchLabels:
+      app: {{ .Chart.Name }}
+  policyTypes:
+    - Ingress
+  ingress:
+    # Admin/analyst traffic and the SSO-token-bearing API surface.
+    - from:
+        - namespaceSelector: {}
+      ports:
+        - port: {{ .Values.service.port }}
+    # Note: ingestion sources reach this same port over mTLS - the port is not split because
+    # authentication is enforced in-application (SecurityConfig / MultiProtocolIngestionAdapter),
+    # not at the network layer. Tighten this policy's `from` selectors per your cluster's
+    # namespace topology before production rollout.

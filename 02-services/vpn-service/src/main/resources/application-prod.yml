@@ -1,0 +1,46 @@
+# 'prod' profile. Refuses to start on the stubs (see StartupGuard). The ssl bundles below reference MOUNTED PEM FILES
+# by path; no key material or password lives in this repository.
+vpn:
+  gateway:
+    adapter: vendor            # no such adapter exists yet -> startup fails until the vendor adapter is implemented (ADR-D5)
+  mfa:
+    stub-enabled: false
+  sec:
+    ssl-bundle: sec-client
+  dc:
+    ssl-bundle: dc-client
+
+springdoc:
+  api-docs:
+    enabled: false
+  swagger-ui:
+    enabled: false
+
+spring:
+  ssl:
+    bundle:
+      pem:
+        sec-client:
+          keystore:
+            certificate: ${VPN_TLS_CERT_PATH:/etc/vpn/tls/tls.crt}
+            private-key: ${VPN_TLS_KEY_PATH:/etc/vpn/tls/tls.key}
+          truststore:
+            certificate: ${VPN_TLS_CA_PATH:/etc/vpn/tls/ca.crt}
+        dc-client:
+          keystore:
+            certificate: ${VPN_TLS_CERT_PATH:/etc/vpn/tls/tls.crt}
+            private-key: ${VPN_TLS_KEY_PATH:/etc/vpn/tls/tls.key}
+          truststore:
+            certificate: ${VPN_TLS_CA_PATH:/etc/vpn/tls/ca.crt}
+        vpn-server:
+          keystore:
+            certificate: ${VPN_TLS_CERT_PATH:/etc/vpn/tls/tls.crt}
+            private-key: ${VPN_TLS_KEY_PATH:/etc/vpn/tls/tls.key}
+          truststore:
+            certificate: ${VPN_TLS_CA_PATH:/etc/vpn/tls/ca.crt}
+
+server:
+  ssl:
+    enabled: true
+    bundle: vpn-server
+    client-auth: want          # dataplane presents a client cert; SSO-token admin callers do not need to

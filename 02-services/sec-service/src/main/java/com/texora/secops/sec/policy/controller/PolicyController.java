@@ -5,7 +5,7 @@ import com.texora.secops.sec.policy.dto.PolicyEvaluationRequest;
 import com.texora.secops.sec.policy.dto.PolicyEvaluationResponse;
 import com.texora.secops.sec.policy.service.PolicyEvaluationService;
 import com.texora.secops.sec.policy.service.PolicyLifecycleService;
-import com.texora.secops.sec.security.TenantContext;
+import com.texora.secops.starter.domain.TenantContext;
 import jakarta.validation.Valid;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -50,7 +50,7 @@ public class PolicyController {
     public ResponseEntity<PolicyEvaluationResponse> evaluate(
             @Valid @RequestBody PolicyEvaluationRequest request) {
 
-        UUID tenantId = TenantContext.requireTenantId();
+        UUID tenantId = TenantContext.get();
         LOGGER.debug("Policy evaluate: caller={} resource={} action={}",
                 request.getCallerService(), request.getResource(), request.getAction());
 
@@ -65,7 +65,7 @@ public class PolicyController {
     @GetMapping
     @PreAuthorize("hasAuthority('sec.policy.read')")
     public ResponseEntity<Page<SecPolicy>> listPolicies(Pageable pageable) {
-        UUID tenantId = TenantContext.requireTenantId();
+        UUID tenantId = TenantContext.get();
         return ResponseEntity.ok(lifecycleService.listPolicies(tenantId, pageable));
     }
 }

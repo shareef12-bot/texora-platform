@@ -24,6 +24,13 @@
         <module>01-platform-foundation/texora-sec-stub</module>
         <module>02-services/sso-service</module>
         <module>02-services/sec-service</module>
+        <module>02-services/siem-service</module>
+        <module>02-services/ftp-service</module>
+        <module>02-services/dc-service</module>
+        <module>02-services/ldap-service</module>
+        <module>02-services/vpn-service</module>
+        <module>02-services/cgi-service</module>
+        <module>02-services/qap-service</module>
     </modules>
 
     <repositories>

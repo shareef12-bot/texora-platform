@@ -1,0 +1,90 @@
+# Secure File Transfer (FTP) service.
+# NOTE: no secrets live in this file. DB password, SEC credentials, mTLS stores come from the
+# environment / Kubernetes secrets (Shared Standards B.6 #6).
+server:
+  port: ${FTP_SERVER_PORT:8084}        # local: run with --server.port=8084 (KNOWN-INTEGRATION-PITFALLS #12)
+  shutdown: graceful
+
+spring:
+  application:
+    name: ftp-service
+  datasource:
+    url: jdbc:postgresql://${FTP_DB_HOST:localhost}:${FTP_DB_PORT:5432}/${FTP_DB_NAME:texora}
+    username: ${FTP_DB_USER:ftp_app}
+    password: ${FTP_DB_PASSWORD}
+  jpa:
+    open-in-view: false
+    hibernate:
+      ddl-auto: validate
+    properties:
+      hibernate:
+        default_schema: ftp
+  flyway:
+    enabled: true
+    schemas: ftp
+    default-schema: ftp
+    create-schemas: true
+    locations: classpath:db/migration
+    # Migrations run as the schema OWNER; the runtime role gets no UPDATE/DELETE on ftp_audit_event.
+    user: ${FTP_FLYWAY_USER:${FTP_DB_USER:ftp_app}}
+    password: ${FTP_FLYWAY_PASSWORD:${FTP_DB_PASSWORD}}
+    placeholders:
+      app_role: ${FTP_DB_USER:ftp_app}
+  kafka:
+    bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS:localhost:9092}
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          # SSO-issued tokens. Local sso-service port is 8081 (PITFALLS #12).
+          jwk-set-uri: ${TEXORA_IAM_JWK_SET_URI:http://localhost:8081/oauth2/jwks}
+
+texora:
+  audit:
+    topic: ftp.audit.events   # property name is a GUESS - see README "unsure" list
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics
+  endpoint:
+    health:
+      probes:
+        enabled: true
+      show-details: never
+  tracing:
+    sampling:
+      probability: 1.0
+
+springdoc:
+  api-docs:
+    enabled: ${FTP_OPENAPI_ENABLED:true}
+    path: /v3/api-docs
+  swagger-ui:
+    enabled: ${FTP_OPENAPI_ENABLED:true}
+
+ftp:
+  sec:
+    base-url: ${FTP_SEC_BASE_URL:http://localhost:8082}
+    timeout-ms: 3000
+  inspection:
+    base-url: ${FTP_INSPECTION_BASE_URL:}      # blank => inspection UNAVAILABLE => files QUARANTINE (fail closed)
+    connect-timeout-ms: 3000
+    read-timeout-ms: 60000
+  staging:
+    directory: ${FTP_STAGING_DIR:/var/lib/ftp-staging}
+  transfer:
+    connect-timeout-ms: 15000
+    io-timeout-ms: 60000
+    retry-backoff-ms: 2000
+    default-max-attempts: 3
+    default-max-file-bytes: 5368709120
+    allow-loopback-targets: false              # SSRF guard; only ever true in tests
+    executor-core-size: 4
+    executor-max-size: 8
+    executor-queue-capacity: 100
+
+logging:
+  level:
+    com.texora.secops.ftp: INFO

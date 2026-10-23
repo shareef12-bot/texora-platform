@@ -1,0 +1,266 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <!--
+        Per KNOWN-INTEGRATION-PITFALLS.md item 4: this service is a module of the
+        texora-secops-platform reactor, nested at 02-services/siem-service/, so relativePath
+        MUST point two levels up. Maven's default of one level up ("../pom.xml") is wrong here
+        and produces a "Non-resolvable parent POM" error.
+
+        ASSUMPTION FLAGGED: groupId/artifactId/version below are inferred from the pitfalls doc's
+        own worked examples (item 4's sample <parent> block uses exactly this coordinate) - the
+        actual root pom.xml was not available to this build to confirm verbatim. Confirm these
+        three values against the real root pom.xml before relying on this.
+    -->
+    <parent>
+        <groupId>com.texora.secops</groupId>
+        <artifactId>texora-secops-platform</artifactId>
+        <version>1.0.0-SNAPSHOT</version>
+        <relativePath>../../pom.xml</relativePath>
+    </parent>
+
+    <artifactId>siem-service</artifactId>
+    <name>siem-service</name>
+    <description>Texora SecOps SOC/SIEM Log Server - platform-wide audit event ingestion, correlation and alerting</description>
+    <packaging>jar</packaging>
+
+    <properties>
+        <java.version>21</java.version>
+        <maven.compiler.release>21</maven.compiler.release>
+    </properties>
+
+    <dependencies>
+        <!-- ================= Platform foundation (per KNOWN-INTEGRATION-PITFALLS.md) =================
+             Versions deliberately omitted - managed by the root texora-secops-platform BOM, exactly
+             like every other dependency below that has no <version>. -->
+
+        <!-- Shared cross-cutting platform concerns: base config, TenantContext,
+             TenantContextMissingException (com.texora.secops.starter.exception), the shared
+             GlobalExceptionHandler bean ("globalExceptionHandler"), etc. -->
+        <dependency>
+            <groupId>com.texora.secops</groupId>
+            <artifactId>texora-secops-starter</artifactId>
+        </dependency>
+
+        <!-- Shared immutable-audit-event publishing (AuditingAspect). See the prominent notes in
+             src/main/java/.../audit/ - this service's own audit/ package is a stopgap pending
+             confirmation of this SDK's real annotation/class API; do not assume it has been
+             fully wired to this dependency yet (see README "Open integration item"). -->
+        <dependency>
+            <groupId>com.texora.secops</groupId>
+            <artifactId>texora-audit-sdk</artifactId>
+        </dependency>
+
+        <!-- Confirmed API (KNOWN-INTEGRATION-PITFALLS.md item 1): TokenValidator, TokenClaims,
+             PlatformException.UnauthenticatedException, all under com.texora.secops.iam.token. -->
+        <dependency>
+            <groupId>com.texora.secops</groupId>
+            <artifactId>texora-iam-client</artifactId>
+        </dependency>
+
+        <!-- texora-audit-sdk's AuditingAspect reads SecurityContextHolder and needs this
+             explicitly per KNOWN-INTEGRATION-PITFALLS.md item 2. Declared here defensively too,
+             in case this module's own transitive scope ever changes - cheap insurance against a
+             "package does not exist" error that has already cost real time once. -->
+        <dependency>
+            <groupId>org.springframework.security</groupId>
+            <artifactId>spring-security-core</artifactId>
+        </dependency>
+
+        <!-- ================= Core web / validation ================= -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-web</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-validation</artifactId>
+        </dependency>
+
+        <!-- ================= Persistence ================= -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-data-jpa</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.postgresql</groupId>
+            <artifactId>postgresql</artifactId>
+            <scope>runtime</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.flywaydb</groupId>
+            <artifactId>flyway-core</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.flywaydb</groupId>
+            <artifactId>flyway-database-postgresql</artifactId>
+        </dependency>
+
+        <!-- ================= Kafka ================= -->
+        <dependency>
+            <groupId>org.springframework.kafka</groupId>
+            <artifactId>spring-kafka</artifactId>
+        </dependency>
+
+        <!-- ================= Security =================
+             texora-iam-client's TokenValidator takes a JwtDecoder in its constructor (see
+             SecurityConfig) - this starter supplies the JwtDecoder/NimbusJwtDecoder types.
+             NOTE: unlike the original draft of this service, we do NOT wire Spring Security's
+             automatic .oauth2ResourceServer(...) filter chain - authentication runs through
+             RbacInterceptor calling TokenValidator.validate(...) directly on the raw
+             Authorization header, per the confirmed standard pattern in
+             KNOWN-INTEGRATION-PITFALLS.md item 1. -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-oauth2-resource-server</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-aop</artifactId>
+        </dependency>
+
+        <!-- ================= Observability ================= -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-actuator</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>io.micrometer</groupId>
+            <artifactId>micrometer-registry-prometheus</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>io.micrometer</groupId>
+            <artifactId>micrometer-tracing-bridge-otel</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>io.opentelemetry</groupId>
+            <artifactId>opentelemetry-exporter-otlp</artifactId>
+        </dependency>
+
+        <!-- ================= OpenAPI =================
+             KNOWN-INTEGRATION-PITFALLS.md item 8 names this exact library as an example of a
+             version-sensitive runtime NoSuchMethodError against Spring Framework 6.2.x
+             (Spring Boot 3.5.x). Verified 2.8.15 is springdoc's own confirmed Spring Boot 3.5.x
+             baseline (spring-io/start.spring.io compatibility matrix) - do not downgrade this
+             without re-checking that matrix. -->
+        <dependency>
+            <groupId>org.springdoc</groupId>
+            <artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>
+            <version>2.8.15</version>
+        </dependency>
+
+        <!-- ================= JSON ================= -->
+        <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-databind</artifactId>
+        </dependency>
+
+        <!-- ================= Testing ================= -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-test</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.kafka</groupId>
+            <artifactId>spring-kafka-test</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.security</groupId>
+            <artifactId>spring-security-test</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.testcontainers</groupId>
+            <artifactId>junit-jupiter</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.testcontainers</groupId>
+            <artifactId>postgresql</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.testcontainers</groupId>
+            <artifactId>kafka</artifactId>
+            <scope>test</scope>
+        </dependency>
+    </dependencies>
+
+    <!-- Kept as a local dependencyManagement import rather than assuming the root platform pom
+         already manages this BOM (unconfirmed) - removing it outright risks a hard "dependency
+         version missing" Maven error for the testcontainers test dependencies below, which is a
+         worse failure mode than a possible duplicate-management notice. If the root pom already
+         manages org.testcontainers:testcontainers-bom, this block is redundant but harmless;
+         prefer consolidating there and deleting this once confirmed. -->
+    <dependencyManagement>
+        <dependencies>
+            <dependency>
+                <groupId>org.testcontainers</groupId>
+                <artifactId>testcontainers-bom</artifactId>
+                <version>1.20.1</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
+
+    <build>
+        <finalName>siem-service</finalName>
+        <plugins>
+            <plugin>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-maven-plugin</artifactId>
+                <version>${spring-boot.version}</version>
+            </plugin>
+            <!-- CI enforcement: fail the build if Lombok ever enters the dependency tree (B.2) -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-enforcer-plugin</artifactId>
+                <version>3.5.0</version>
+                <executions>
+                    <execution>
+                        <id>ban-lombok</id>
+                        <phase>validate</phase>
+                        <goals>
+                            <goal>enforce</goal>
+                        </goals>
+                        <configuration>
+                            <rules>
+                                <bannedDependencies>
+                                    <excludes>
+                                        <exclude>org.projectlombok:lombok</exclude>
+                                    </excludes>
+                                </bannedDependencies>
+                            </rules>
+                            <fail>true</fail>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.jacoco</groupId>
+                <artifactId>jacoco-maven-plugin</artifactId>
+                <version>0.8.12</version>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>prepare-agent</goal>
+                        </goals>
+                    </execution>
+                    <execution>
+                        <id>report</id>
+                        <phase>test</phase>
+                        <goals>
+                            <goal>report</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
+</project>

@@ -1,0 +1,128 @@
+spring:
+  application:
+    name: siem-service
+
+  datasource:
+    url: ${SIEM_DB_URL:jdbc:postgresql://localhost:5432/texora_secops}
+    username: ${SIEM_DB_USER:siem_app}
+    password: ${SIEM_DB_PASSWORD:changeme}
+    hikari:
+      schema: siem
+      maximum-pool-size: ${SIEM_DB_POOL_SIZE:20}
+
+  jpa:
+    open-in-view: false
+    hibernate:
+      ddl-auto: validate
+    properties:
+      hibernate:
+        default_schema: siem
+        jdbc.time_zone: UTC
+        format_sql: false
+
+  flyway:
+    enabled: true
+    schemas: siem
+    default-schema: siem
+    locations: classpath:db/migration
+    baseline-on-migrate: true
+
+  kafka:
+    bootstrap-servers: ${SIEM_KAFKA_BOOTSTRAP:localhost:9092}
+    consumer:
+      group-id: siem-service
+      auto-offset-reset: earliest
+      enable-auto-commit: false
+      properties:
+        spring.json.trusted.packages: "com.texora.secops.siem.*"
+        isolation.level: read_committed
+    producer:
+      acks: all
+      properties:
+        enable.idempotence: true
+    # mTLS between SIEM and the shared Kafka bus - configure via SSL_* env vars per environment.
+    security:
+      protocol: ${SIEM_KAFKA_SECURITY_PROTOCOL:PLAINTEXT}
+    ssl:
+      trust-store-location: ${SIEM_KAFKA_TRUSTSTORE:}
+      trust-store-password: ${SIEM_KAFKA_TRUSTSTORE_PASSWORD:}
+      key-store-location: ${SIEM_KAFKA_KEYSTORE:}
+      key-store-password: ${SIEM_KAFKA_KEYSTORE_PASSWORD:}
+
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          # Points at the shared SSO/IAM service's JWKS endpoint. RbacInterceptor and
+          # SecurityConfig rely exclusively on this - SIEM implements no credential
+          # check of its own for admin/analyst callers (B.6.1).
+          issuer-uri: ${SIEM_SSO_ISSUER_URI:https://sso.texora.internal/realms/texora}
+          jwk-set-uri: ${SIEM_SSO_JWKS_URI:https://sso.texora.internal/realms/texora/protocol/openid-connect/certs}
+
+server:
+  port: ${SIEM_SERVER_PORT:8086}
+  shutdown: graceful
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,prometheus,metrics
+  endpoint:
+    health:
+      show-details: when-authorized
+      probes:
+        enabled: true
+  metrics:
+    tags:
+      application: siem-service
+  tracing:
+    sampling:
+      probability: 1.0
+  otlp:
+    tracing:
+      endpoint: ${SIEM_OTLP_ENDPOINT:http://otel-collector:4318/v1/traces}
+
+springdoc:
+  api-docs:
+    path: /api/v1/openapi
+  swagger-ui:
+    path: /api/v1/docs
+    enabled: ${SIEM_SWAGGER_ENABLED:true}
+
+siem:
+  ingestion:
+    kafka-topics: dc.audit.events,ldap.audit.events,sso.audit.events,ftp.audit.events,cgi.audit.events,vpn.audit.events,sec.audit.events,ilmora.audit.events,texora-jobs.audit.events,taskorbit.audit.events,hrms.audit.events,crm.audit.events
+    dlq-topic-suffix: .dlq
+    max-retries: 5
+    initial-backoff-ms: 500
+    max-backoff-ms: 30000
+    retry-scan-interval-ms: 5000
+    http:
+      enabled: true
+    syslog:
+      enabled: ${SIEM_SYSLOG_ENABLED:false}
+      port: ${SIEM_SYSLOG_PORT:6514}
+      require-mtls: true
+  correlation:
+    thread-pool-size: 8
+    rule-timeout-ms: 2000
+  search:
+    backend:
+      base-url: ${SIEM_SEARCH_BASE_URL:http://opensearch:9200}
+      username: ${SIEM_SEARCH_USER:}
+      password: ${SIEM_SEARCH_PASSWORD:}
+      connect-timeout-ms: 2000
+      read-timeout-ms: 5000
+    index-prefix: normalized_event
+  sec:
+    base-url: ${SIEM_SEC_BASE_URL:https://sec.texora.internal}
+    timeout-ms: 3000
+  # Note: the reserved platform-tenant sentinel id used for ingestion-channel tables is a
+  # compile-time constant (CallerContext.PLATFORM_TENANT_ID = all-zeros UUID), not
+  # configurable here - it must match the constant used in the V1 Flyway migration.
+
+logging:
+  level:
+    root: INFO
+    com.texora.secops.siem: INFO

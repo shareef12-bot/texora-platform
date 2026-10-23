@@ -1,5 +1,6 @@
 package com.texora.secops.sec.security;
 
+import com.texora.secops.starter.domain.TenantContext;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.slf4j.Logger;
@@ -23,6 +24,10 @@ import java.util.UUID;
  *
  * <p>This interceptor populates TenantContext from the certificate's tenant
  * extension (OID or SAN) rather than from an SSO token.</p>
+ *
+ * <p>Uses the shared {@code com.texora.secops.starter.domain.TenantContext} (no local copy).
+ * Behaviour is unchanged from the pre-refactor version, including the dev-only
+ * mTLS-disabled fallback tenant.</p>
  */
 @Component
 public class ServiceAuthInterceptor implements HandlerInterceptor {
@@ -71,7 +76,7 @@ public class ServiceAuthInterceptor implements HandlerInterceptor {
         String tenantFromCert = extractOU(clientCert.getSubjectX500Principal().getName());
         if (tenantFromCert != null) {
             try {
-                TenantContext.setTenantId(UUID.fromString(tenantFromCert));
+                TenantContext.set(UUID.fromString(tenantFromCert));
             } catch (IllegalArgumentException ex) {
                 LOGGER.debug("OU in mTLS cert is not a tenant UUID: {}", tenantFromCert);
             }
@@ -109,6 +114,6 @@ public class ServiceAuthInterceptor implements HandlerInterceptor {
 
     private void setFallbackTenant() {
         // Dev-only fallback — system tenant
-        TenantContext.setTenantId(UUID.fromString("00000000-0000-0000-0000-000000000001"));
+        TenantContext.set(UUID.fromString("00000000-0000-0000-0000-000000000001"));
     }
 }

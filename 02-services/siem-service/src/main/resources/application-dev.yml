@@ -1,0 +1,21 @@
+spring:
+  jpa:
+    hibernate:
+      ddl-auto: validate
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: http://localhost:8080/realms/texora-dev
+          jwk-set-uri: http://localhost:8080/realms/texora-dev/protocol/openid-connect/certs
+
+logging:
+  level:
+    root: INFO
+    com.texora.secops.siem: DEBUG
+    org.hibernate.SQL: DEBUG
+
+siem:
+  search:
+    backend:
+      base-url: http://localhost:9200

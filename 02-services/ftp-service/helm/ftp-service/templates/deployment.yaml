@@ -1,0 +1,62 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ftp-service
+  namespace: {{ .Values.namespace }}
+  labels: { app: ftp-service }
+spec:
+  replicas: {{ .Values.replicaCount }}
+  selector:
+    matchLabels: { app: ftp-service }
+  template:
+    metadata:
+      labels: { app: ftp-service }
+    spec:
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 10001
+        runAsGroup: 10001
+        fsGroup: 10001
+        seccompProfile: { type: RuntimeDefault }
+      containers:
+        - name: ftp-service
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          ports:
+            - { name: http, containerPort: 8084 }
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities: { drop: ["ALL"] }
+          env:
+            - { name: FTP_SERVER_PORT, value: "8084" }
+            - { name: FTP_DB_HOST, value: {{ .Values.config.dbHost | quote }} }
+            - { name: FTP_DB_NAME, value: {{ .Values.config.dbName | quote }} }
+            - { name: FTP_DB_USER, value: {{ .Values.config.dbUser | quote }} }
+            - { name: KAFKA_BOOTSTRAP_SERVERS, value: {{ .Values.config.kafkaBootstrapServers | quote }} }
+            - { name: TEXORA_IAM_JWK_SET_URI, value: {{ .Values.config.iamJwkSetUri | quote }} }
+            - { name: FTP_SEC_BASE_URL, value: {{ .Values.config.secBaseUrl | quote }} }
+            - { name: FTP_INSPECTION_BASE_URL, value: {{ .Values.config.inspectionBaseUrl | quote }} }
+            - { name: FTP_OPENAPI_ENABLED, value: {{ .Values.config.openapiEnabled | quote }} }
+          envFrom:
+            - secretRef: { name: {{ .Values.existingSecret }} }
+          readinessProbe:
+            httpGet: { path: /actuator/health/readiness, port: http }
+            initialDelaySeconds: 20
+            periodSeconds: 10
+          livenessProbe:
+            httpGet: { path: /actuator/health/liveness, port: http }
+            initialDelaySeconds: 40
+            periodSeconds: 20
+          resources: {{- toYaml .Values.resources | nindent 12 }}
+          volumeMounts:
+            - { name: staging, mountPath: /var/lib/ftp-staging }
+            - { name: tmp, mountPath: /tmp }
+      volumes:
+        - name: staging
+          {{- if .Values.staging.persistence.enabled }}
+          persistentVolumeClaim: { claimName: {{ .Values.staging.persistence.existingClaim }} }
+          {{- else }}
+          emptyDir: { sizeLimit: {{ .Values.staging.sizeLimit }} }
+          {{- end }}
+        - { name: tmp, emptyDir: {} }

@@ -1,0 +1,37 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: dc-service
+  namespace: {{ .Values.namespace }}
+spec:
+  replicas: {{ .Values.replicaCount }}
+  selector:
+    matchLabels: { app: dc-service }
+  template:
+    metadata:
+      labels: { app: dc-service }
+    spec:
+      securityContext:
+        runAsNonRoot: true
+      containers:
+        - name: dc-service
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          ports:
+            - containerPort: {{ .Values.service.port }}
+          env:
+            {{- range $k, $v := .Values.env }}
+            - name: {{ $k }}
+              value: {{ $v | quote }}
+            {{- end }}
+            - name: DC_DB_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.existingSecret }}
+                  key: db-password
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+          readinessProbe:
+            httpGet: { path: /actuator/health/readiness, port: {{ .Values.service.port }} }
+          livenessProbe:
+            httpGet: { path: /actuator/health/liveness, port: {{ .Values.service.port }} }

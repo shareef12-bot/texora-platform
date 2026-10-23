@@ -1,30 +1,96 @@
-# Maven
+
+# ==========================================
+# Maven / Java
+# ==========================================
 target/
 *.jar
 *.war
 !.mvn/wrapper/maven-wrapper.jar
 
-# IDE
+# ==========================================
+# IDE / Editor
+# ==========================================
 .idea/
 *.iml
 .vscode/
 .settings/
 .project
 .classpath
+*.swp
+*.swo
+*~
 
-# OS
+# ==========================================
+# Operating System
+# ==========================================
 .DS_Store
 Thumbs.db
+Desktop.ini
 
+# ==========================================
 # Logs
+# ==========================================
 *.log
 
-# Local environment overrides — NEVER commit real secrets or local-only config
+# ==========================================
+# Environment Files and Local Secrets
+# NEVER commit real credentials or local-only configuration
+# ==========================================
 .env
-.env.local
-application-local.yml
-*.local.yml
+.env.*
+!.env.example
+!.env.sample
 
+application-local.yml
+application-local.yaml
+application-local.properties
+*.local.yml
+*.local.yaml
+*.local.properties
+
+# Private keys and certificates
+*.pem
+*.key
+*.p12
+*.pfx
+*.keystore
+
+# ==========================================
 # Docker
+# ==========================================
 docker-compose.override.yml
-"*.zip" 
+docker-compose.override.yaml
+
+# ==========================================
+# Archives
+# ==========================================
+*.zip
+
+# ==========================================
+# Local Build and Test Output
+# ==========================================
+/all-fast-log.txt
+/cgi-fast-log.txt
+/cgi-summary.txt
+/dc-fast-log.txt
+/ftp-fast-log.txt
+/ftp-audit-trail.txt
+/ftp-rbac-test.txt
+/ldap-fast-log.txt
+/qap-fast-log.txt
+/sec-fast-log.txt
+/siem-fast-log.txt
+/vpn-fast-log.txt
+
+# ==========================================
+# Service-Specific Check Output
+# ==========================================
+/02-services/cgi-service/cgi-check.txt
+/02-services/qap-service/qap-check*.txt
+
+# Local test helper
+/test-one.bat
+
+# Generated Maven output
+/build-log.txt
+/sso-test-log.txt
