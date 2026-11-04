@@ -11,6 +11,8 @@ import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 import org.testcontainers.utility.DockerImageName;
 
+import java.time.Duration;
+
 @Testcontainers
 @ActiveProfiles("test")
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
@@ -24,7 +26,8 @@ public abstract class AbstractIntegrationTest {
 
     @Container
     static final KafkaContainer KAFKA = new KafkaContainer(
-            DockerImageName.parse("confluentinc/cp-kafka:7.6.0"));
+            DockerImageName.parse("confluentinc/cp-kafka:7.6.0"))
+            .withStartupTimeout(Duration.ofMinutes(5));
 
     @DynamicPropertySource
     static void registerProperties(DynamicPropertyRegistry registry) {

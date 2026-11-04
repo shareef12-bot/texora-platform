@@ -1,0 +1,22 @@
+spring:
+  jpa:
+    hibernate:
+      ddl-auto: validate
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          # Disabled during tests — overridden by DynamicPropertySource
+          issuer-uri: http://localhost:0/disabled
+
+qap:
+  sec:
+    base-url: http://localhost:0/stub-sec
+  siem:
+    query-url: http://localhost:0/stub-siem
+  flaky:
+    quarantine-threshold: 0.30
+
+logging:
+  level:
+    com.texora.qap: DEBUG

@@ -2,7 +2,7 @@ package com.texora.secops.sec.audit.controller;
 
 import com.texora.secops.sec.audit.domain.SecAuditEvent;
 import com.texora.secops.sec.audit.repository.SecAuditEventRepository;
-import com.texora.secops.sec.security.TenantContext;
+import com.texora.secops.starter.domain.TenantContext;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
@@ -29,7 +29,7 @@ public class AuditSearchController {
     @GetMapping
     @PreAuthorize("hasAuthority('sec.audit.read')")
     public ResponseEntity<Page<SecAuditEvent>> searchAuditEvents(Pageable pageable) {
-        UUID tenantId = TenantContext.requireTenantId();
+        UUID tenantId = TenantContext.get();
         return ResponseEntity.ok(
                 auditEventRepository.findByTenantIdOrderBySequenceNoDesc(tenantId, pageable));
     }

@@ -1,0 +1,54 @@
+# Alerts for BOTH failure modes of proactive revocation (LLD s9.4) plus dataplane connectivity.
+# Thresholds are STARTING POINTS: tune against real traffic once the SLOs are finalized (LLD s12 open item).
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: vpn-service-revocation
+  labels: { app: vpn-service }
+spec:
+  groups:
+    - name: vpn-under-triggering          # stale sessions surviving incomplete re-validation
+      rules:
+        - alert: VpnSessionsNotBeingRevalidated
+          expr: vpn_session_oldest_unvalidated_seconds > 240
+          for: 1m
+          labels: { severity: critical }
+          annotations:
+            summary: "An ACTIVE VPN session has not been re-validated for >240s (max-unverified is 300s)"
+        - alert: VpnWatchdogRevokedStaleSessions
+          expr: increase(vpn_session_stale_detected_total[10m]) > 0
+          labels: { severity: critical }
+          annotations:
+            summary: "Watchdog found sessions the normal re-validation loop missed"
+        - alert: VpnTeardownBacklog
+          expr: vpn_dataplane_teardown_pending > 0
+          for: 2m
+          labels: { severity: critical }
+          annotations:
+            summary: "Sessions are REVOKED in the control plane but the dataplane tunnel is not confirmed gone"
+    - name: vpn-over-triggering           # excessive revocation degrading availability
+      rules:
+        - alert: VpnUncertaintyRevocationSpike
+          expr: sum(increase(vpn_session_revocations_total{uncertainty="true"}[5m])) > 10
+          labels: { severity: warning }
+          annotations:
+            summary: "Many uncertainty-triggered revocations in 5m - check SEC/DC health before it becomes an outage"
+        - alert: VpnRevocationsByTrigger
+          expr: sum by (trigger) (increase(vpn_session_revocations_total{trigger=~"SEC_UNAVAILABLE|IDENTITY_UNCERTAIN"}[5m])) > 5
+          labels: { severity: warning }
+          annotations:
+            summary: "Revocations driven by dependency unavailability (trigger={{ $labels.trigger }})"
+    - name: vpn-dependencies
+      rules:
+        - alert: VpnDataplaneUnreachable
+          expr: vpn_dataplane_reachable == 0
+          for: 1m
+          labels: { severity: critical }
+          annotations:
+            summary: "VPN dataplane unreachable from the control plane"
+        - alert: VpnAuditDeliveryBacklog
+          expr: vpn_audit_outbox_pending > 500
+          for: 5m
+          labels: { severity: warning }
+          annotations:
+            summary: "Audit events are queued locally and not reaching Kafka/SIEM"

@@ -66,17 +66,16 @@ com.texora.secops.sec
 ├── audit/
 │   ├── controller/  AuditSearchController
 │   ├── service/     AuditChainService (hash chain + scheduled verification)
-│   ├── aspect/      AuditingAspect (cross-cutting audit emission)
+│   ├── aspect/      SecAuditChainAspect (feeds SEC's hash chain; normal audit events use the shared @Audited)
 │   ├── repository/  SecAuditEventRepository
 │   └── domain/      SecAuditEvent
 ├── security/
-│   ├── RbacInterceptor        (SSO JWT → TenantContext)
-│   ├── ServiceAuthInterceptor (mTLS CN verification)
-│   └── TenantContext          (thread-local tenant, never from request params)
+│   ├── RbacInterceptor        (shared TokenValidator → shared TenantContext + TokenClaims)
+│   └── ServiceAuthInterceptor (mTLS CN verification)
 └── config/
     ├── SecurityConfig         (Spring Security, OAuth2 resource server)
     ├── WebMvcConfig           (interceptor registration)
-    ├── GlobalExceptionHandler (standard error body per B.7)
+    ├── GlobalExceptionHandler (bean "secGlobalExceptionHandler"; SEC-specific exceptions, standard error body per B.7)
     ├── SecConfigEntry         (domain entity for /api/v1/config)
     ├── SecConfigRepository
     └── ConfigController

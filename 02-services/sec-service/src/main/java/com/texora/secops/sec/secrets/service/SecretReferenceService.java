@@ -1,5 +1,6 @@
 package com.texora.secops.sec.secrets.service;
 
+import com.texora.secops.audit.annotation.Audited;
 import com.texora.secops.sec.secrets.adapter.VaultKmsAdapter;
 import com.texora.secops.sec.secrets.domain.SecSecretReference;
 import com.texora.secops.sec.secrets.dto.SecretReferenceResponse;
@@ -49,6 +50,7 @@ public class SecretReferenceService {
      * Registers a new secret reference. The vault path is verified via VaultKmsAdapter
      * before saving.
      */
+    @Audited(action = "SECRET_REFERENCE_REGISTERED", targetType = "SECRET_REFERENCE")
     @Transactional
     public SecSecretReference registerReference(UUID tenantId, String logicalName, String vaultPath,
                                                  String kmsKeyId, String owningService,
@@ -83,6 +85,7 @@ public class SecretReferenceService {
      *
      * <p>If the caller is not the owning_service: 403 Forbidden (Req 2).</p>
      */
+    @Audited(action = "SECRET_REFERENCE_RESOLVED", targetType = "SECRET_REFERENCE")
     @Transactional(readOnly = true)
     public SecretReferenceResponse resolveReference(UUID tenantId, String logicalName,
                                                      String callerService) {

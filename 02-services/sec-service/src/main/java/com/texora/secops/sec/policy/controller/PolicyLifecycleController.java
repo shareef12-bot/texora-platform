@@ -3,7 +3,9 @@ package com.texora.secops.sec.policy.controller;
 import com.texora.secops.sec.policy.domain.SecPolicy;
 import com.texora.secops.sec.policy.domain.SecPolicyVersion;
 import com.texora.secops.sec.policy.service.PolicyLifecycleService;
-import com.texora.secops.sec.security.TenantContext;
+import com.texora.secops.iam.token.TokenClaims;
+import com.texora.secops.sec.security.RbacInterceptor;
+import com.texora.secops.starter.domain.TenantContext;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -12,12 +14,11 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestAttribute;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -41,7 +42,7 @@ public class PolicyLifecycleController {
     @GetMapping
     @PreAuthorize("hasAuthority('sec.policy.read')")
     public ResponseEntity<Page<SecPolicy>> listPolicies(Pageable pageable) {
-        UUID tenantId = TenantContext.requireTenantId();
+        UUID tenantId = TenantContext.get();
         return ResponseEntity.ok(lifecycleService.listPolicies(tenantId, pageable));
     }
 
@@ -49,9 +50,9 @@ public class PolicyLifecycleController {
     @PreAuthorize("hasAuthority('sec.policy.write')")
     public ResponseEntity<SecPolicy> createPolicy(
             @Valid @RequestBody CreatePolicyRequest request,
-            @AuthenticationPrincipal Jwt jwt) {
+            @RequestAttribute(RbacInterceptor.CLAIMS_ATTRIBUTE) TokenClaims claims) {
 
-        UUID tenantId = TenantContext.requireTenantId();
+        UUID tenantId = TenantContext.get();
         SecPolicy policy = lifecycleService.createPolicy(
                 tenantId, request.getName(), request.getSubjectType(),
                 request.getResource(), request.getAction(), request.getOwnerTeam());
@@ -63,10 +64,10 @@ public class PolicyLifecycleController {
     public ResponseEntity<SecPolicyVersion> createVersion(
             @PathVariable UUID id,
             @Valid @RequestBody CreateVersionRequest request,
-            @AuthenticationPrincipal Jwt jwt) {
+            @RequestAttribute(RbacInterceptor.CLAIMS_ATTRIBUTE) TokenClaims claims) {
 
-        UUID tenantId = TenantContext.requireTenantId();
-        UUID authoredBy = UUID.fromString(jwt.getSubject());
+        UUID tenantId = TenantContext.get();
+        UUID authoredBy = claims.getSubject();
         SecPolicyVersion version = lifecycleService.createPolicyVersion(
                 tenantId, id, request.getEffect(), request.getConditions(), authoredBy);
         return ResponseEntity.status(HttpStatus.CREATED).body(version);
@@ -76,10 +77,10 @@ public class PolicyLifecycleController {
     @PreAuthorize("hasAuthority('sec.policy.activate')")
     public ResponseEntity<SecPolicyVersion> activateVersion(
             @PathVariable UUID id,
-            @AuthenticationPrincipal Jwt jwt) {
+            @RequestAttribute(RbacInterceptor.CLAIMS_ATTRIBUTE) TokenClaims claims) {
 
-        UUID tenantId = TenantContext.requireTenantId();
-        UUID activatedBy = UUID.fromString(jwt.getSubject());
+        UUID tenantId = TenantContext.get();
+        UUID activatedBy = claims.getSubject();
         SecPolicyVersion version = lifecycleService.activateVersion(tenantId, id, activatedBy);
         return ResponseEntity.ok(version);
     }

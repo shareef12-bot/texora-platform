@@ -1,5 +1,6 @@
 package com.texora.secops.sec.secrets.service;
 
+import com.texora.secops.audit.annotation.Audited;
 import com.texora.secops.sec.secrets.adapter.VaultKmsAdapter;
 import com.texora.secops.sec.secrets.domain.SecKeyRotationRecord;
 import com.texora.secops.sec.secrets.domain.SecSecretReference;
@@ -39,6 +40,7 @@ public class KeyRotationService {
         return rotationRepository.findByTenantIdOrderByRotationDueAtDesc(tenantId, pageable);
     }
 
+    @Audited(action = "KEY_ROTATION_SCHEDULED", targetType = "KEY_ROTATION")
     @Transactional
     public SecKeyRotationRecord scheduleRotation(UUID tenantId, UUID secretReferenceId,
                                                   Instant rotationDueAt) {
@@ -54,6 +56,7 @@ public class KeyRotationService {
         return saved;
     }
 
+    @Audited(action = "KEY_ROTATION_OUTCOME_RECORDED", targetType = "KEY_ROTATION")
     @Transactional
     public SecKeyRotationRecord recordRotationOutcome(UUID tenantId, UUID rotationRecordId,
                                                        UUID rotatedBy, String outcome) {

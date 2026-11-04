@@ -1,0 +1,6 @@
+apiVersion: v2
+name: siem-service
+description: Texora SecOps SOC/SIEM Log Server
+type: application
+version: 1.0.0
+appVersion: "1.0.0"

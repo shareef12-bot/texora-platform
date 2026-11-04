@@ -1,0 +1,69 @@
+replicaCount: 2
+
+image:
+  repository: registry.texora.internal/secops/siem-service
+  tag: "1.0.0"
+  pullPolicy: IfNotPresent
+
+namespace: secops
+
+service:
+  type: ClusterIP
+  port: 8086
+
+resources:
+  requests:
+    cpu: 500m
+    memory: 768Mi
+  limits:
+    cpu: "2"
+    memory: 1536Mi
+
+autoscaling:
+  enabled: true
+  minReplicas: 2
+  maxReplicas: 8
+  targetCPUUtilizationPercentage: 70
+
+env:
+  SIEM_KAFKA_BOOTSTRAP: "kafka-bootstrap.secops.svc.cluster.local:9092"
+  SIEM_SEARCH_BASE_URL: "http://opensearch.secops.svc.cluster.local:9200"
+  SIEM_SEC_BASE_URL: "https://sec.texora.internal"
+  SIEM_SSO_ISSUER_URI: "https://sso.texora.internal/realms/texora"
+  SIEM_SSO_JWKS_URI: "https://sso.texora.internal/realms/texora/protocol/openid-connect/certs"
+  SIEM_SYSLOG_ENABLED: "false"
+
+secretRefs:
+  dbCredentials: siem-db-credentials      # keys: username, password
+  dbUrl: siem-db-credentials              # key: jdbc-url
+  searchCredentials: siem-search-credentials  # keys: username, password (optional)
+
+serviceAccount:
+  create: true
+  name: siem-service
+
+podSecurityContext:
+  runAsNonRoot: true
+  fsGroup: 1000
+
+securityContext:
+  runAsNonRoot: true
+  allowPrivilegeEscalation: false
+  readOnlyRootFilesystem: false
+  capabilities:
+    drop: ["ALL"]
+
+probes:
+  liveness:
+    path: /actuator/health/liveness
+    initialDelaySeconds: 45
+    periodSeconds: 15
+  readiness:
+    path: /actuator/health/readiness
+    initialDelaySeconds: 30
+    periodSeconds: 10
+
+serviceMonitor:
+  enabled: true
+  path: /actuator/prometheus
+  interval: 15s

@@ -186,9 +186,10 @@
           <parameters>true</parameters>
         </configuration>
       </plugin>
-      <plugin>
+            <plugin>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-maven-plugin</artifactId>
+        <version>${spring-boot.version}</version>
       </plugin>
       <!-- Without this, *IT.java classes (OAuth2AuthorizeFlowIT,
            ApplicationRegistrationControllerIT — the Testcontainers-backed
@@ -214,7 +215,8 @@
       <!-- CI gate: fail the build if Lombok ever appears in the dependency tree -->
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-enforcer-plugin</artifactId>
+         <artifactId>maven-enforcer-plugin</artifactId>
+        <version>3.6.3</version>
         <executions>
           <execution>
             <id>no-lombok</id>

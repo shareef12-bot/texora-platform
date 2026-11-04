@@ -1,0 +1,4 @@
+﻿# spring-webmvc 6.2.19: fix only in 7.0.9 (Spring Boot 4). No 6.2.x fix.
+# Not using XsltView or SSE views. Revisit on Spring Boot 4 upgrade.
+CVE-2026-47884
+CVE-2026-47890

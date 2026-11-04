@@ -2,7 +2,9 @@ package com.texora.secops.sec.secrets.controller;
 
 import com.texora.secops.sec.secrets.domain.SecKeyRotationRecord;
 import com.texora.secops.sec.secrets.service.KeyRotationService;
-import com.texora.secops.sec.security.TenantContext;
+import com.texora.secops.iam.token.TokenClaims;
+import com.texora.secops.sec.security.RbacInterceptor;
+import com.texora.secops.starter.domain.TenantContext;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
 import org.springframework.data.domain.Page;
@@ -10,12 +12,11 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestAttribute;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -38,7 +39,7 @@ public class KeyRotationController {
     @GetMapping
     @PreAuthorize("hasAuthority('sec.key.read')")
     public ResponseEntity<Page<SecKeyRotationRecord>> listRotationRecords(Pageable pageable) {
-        UUID tenantId = TenantContext.requireTenantId();
+        UUID tenantId = TenantContext.get();
         return ResponseEntity.ok(keyRotationService.listRotationRecords(tenantId, pageable));
     }
 
@@ -46,7 +47,7 @@ public class KeyRotationController {
     @PreAuthorize("hasAuthority('sec.key.write')")
     public ResponseEntity<SecKeyRotationRecord> scheduleRotation(
             @Valid @RequestBody ScheduleRotationRequest request) {
-        UUID tenantId = TenantContext.requireTenantId();
+        UUID tenantId = TenantContext.get();
         SecKeyRotationRecord record = keyRotationService.scheduleRotation(
                 tenantId, request.getSecretReferenceId(), request.getRotationDueAt());
         return ResponseEntity.status(HttpStatus.CREATED).body(record);
@@ -57,9 +58,9 @@ public class KeyRotationController {
     public ResponseEntity<SecKeyRotationRecord> recordOutcome(
             @PathVariable UUID id,
             @Valid @RequestBody OutcomeRequest request,
-            @AuthenticationPrincipal Jwt jwt) {
-        UUID tenantId = TenantContext.requireTenantId();
-        UUID rotatedBy = UUID.fromString(jwt.getSubject());
+            @RequestAttribute(RbacInterceptor.CLAIMS_ATTRIBUTE) TokenClaims claims) {
+        UUID tenantId = TenantContext.get();
+        UUID rotatedBy = claims.getSubject();
         SecKeyRotationRecord record = keyRotationService.recordRotationOutcome(
                 tenantId, id, rotatedBy, request.getOutcome());
         return ResponseEntity.ok(record);

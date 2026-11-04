@@ -1,0 +1,3 @@
+b675ebb305f42b2136cff5c0d16ff32e7db42b83:02-services/cgi-service/src/test/java/com/texora/secops/cgi/integration/GatewayFlowIntegrationTest.java:generic-api-key:138
+b675ebb305f42b2136cff5c0d16ff32e7db42b83:02-services/cgi-service/src/test/java/com/texora/secops/cgi/audit/RedactionRegressionTest.java:jwt:42
+b675ebb305f42b2136cff5c0d16ff32e7db42b83:02-services/cgi-service/src/test/java/com/texora/secops/cgi/audit/RedactionRegressionTest.java:generic-api-key:45

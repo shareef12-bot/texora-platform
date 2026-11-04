@@ -1,5 +1,6 @@
 package com.texora.secops.sec.approval.service;
 
+import com.texora.secops.audit.annotation.Audited;
 import com.texora.secops.sec.approval.domain.SecApprovalDecision;
 import com.texora.secops.sec.approval.domain.SecPrivilegedRequest;
 import com.texora.secops.sec.approval.repository.SecApprovalDecisionRepository;
@@ -31,7 +32,8 @@ import java.util.UUID;
  *   <li>Requester CANNOT be an approver — self-approval is rejected with 403.</li>
  *   <li>Requests that are neither approved nor rejected within the configured
  *       window transition to EXPIRED rather than remaining actionable indefinitely.</li>
- *   <li>Every transition is written to the audit chain (via AuditingAspect).</li>
+ *   <li>Every transition is audited: shared {@code @Audited} (normal audit stream) plus SEC's
+ *       hash-chained ledger (via SecAuditChainAspect).</li>
  * </ul>
  */
 @Service
@@ -69,6 +71,7 @@ public class PrivilegedApprovalService {
     /**
      * Submit a new privileged request. Justification is mandatory.
      */
+    @Audited(action = "PRIVILEGED_REQUEST_SUBMITTED", targetType = "PRIVILEGED_REQUEST")
     @Transactional
     public SecPrivilegedRequest submitRequest(UUID tenantId, String requestType,
                                                String targetRef, UUID requestedBy,
@@ -95,6 +98,7 @@ public class PrivilegedApprovalService {
      * <p>SEPARATION OF DUTIES: approver_id == requested_by is rejected with 403.
      * This check is in CODE, not documentation.</p>
      */
+    @Audited(action = "PRIVILEGED_REQUEST_DECISION_RECORDED", targetType = "PRIVILEGED_REQUEST")
     @Transactional
     public SecApprovalDecision recordDecision(UUID tenantId, UUID requestId,
                                                UUID approverId, String decision,

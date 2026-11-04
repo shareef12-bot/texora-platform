@@ -1,0 +1,98 @@
+server:
+  port: ${LDAP_SERVER_PORT:8087}
+  servlet:
+    context-path: /
+
+spring:
+  application:
+    name: ldap-service
+
+  datasource:
+    url: ${LDAP_DB_URL:jdbc:postgresql://localhost:5432/texora_secops}
+    username: ${LDAP_DB_USERNAME:ldap_svc}
+    password: ${LDAP_DB_PASSWORD:changeme}
+    hikari:
+      connection-timeout: 5000
+      maximum-pool-size: 10
+
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    properties:
+      hibernate:
+        default_schema: ldap
+        jdbc:
+          time_zone: UTC
+
+  flyway:
+    enabled: true
+    schemas: ldap
+    locations: classpath:db/migration
+    baseline-on-migrate: false
+
+  kafka:
+    bootstrap-servers: ${LDAP_KAFKA_BROKERS:localhost:9092}
+    consumer:
+      group-id: ldap-service
+      auto-offset-reset: earliest
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
+      properties:
+        spring.json.trusted.packages: "com.texora.secops.*"
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          jwk-set-uri: ${LDAP_JWK_SET_URI:http://sso-service:8081/.well-known/jwks.json}
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics,prometheus
+  endpoint:
+    health:
+      show-details: when_authorized
+
+# OpenTelemetry
+otel:
+  exporter:
+    otlp:
+      endpoint: ${OTEL_EXPORTER_OTLP_ENDPOINT:http://otel-collector:4317}
+  service:
+    name: ldap-service
+
+# Service-specific configuration
+ldap:
+  kafka:
+    topics:
+      audit-events: ldap.audit.events
+      dc-sync-requested: dc.sync.requested
+
+  engine:
+    # LDAP engine connection — used by LdapEngineAdapter.
+    # Not yet wired to a real product (see ADR-D5); StubLdapEngineAdapter is active.
+    host: ${LDAP_ENGINE_HOST:localhost}
+    port: ${LDAP_ENGINE_PORT:636}
+    use-tls: ${LDAP_ENGINE_USE_TLS:true}
+    bind-dn: ${LDAP_ENGINE_BIND_DN:cn=svc-ldap,dc=texora,dc=internal}
+    bind-password-ref: ${LDAP_ENGINE_BIND_PASSWORD_REF:ldap-svc-bind-password}
+    base-dn: ${LDAP_ENGINE_BASE_DN:dc=texora,dc=internal}
+    connection-timeout-ms: ${LDAP_ENGINE_CONN_TIMEOUT_MS:5000}
+    read-timeout-ms: ${LDAP_ENGINE_READ_TIMEOUT_MS:10000}
+
+  sync:
+    retry-max-attempts: 5
+    retry-backoff-ms: 2000
+
+  sec:
+    policy-endpoint: ${SEC_POLICY_ENDPOINT:http://sec-service:8082/api/v1/policies}
+
+logging:
+  level:
+    com.texora.secops.ldap: INFO
+    org.springframework.security: WARN

@@ -19,6 +19,31 @@
     </description>
 
     <dependencies>
+        <!-- Shared platform libraries (KNOWN-INTEGRATION-PITFALLS 11). Same-reactor modules, so
+             ${project.version} == the parent's 1.0.0-SNAPSHOT; harmless if the root POM also manages it. -->
+        <dependency>
+            <groupId>com.texora.secops</groupId>
+            <artifactId>texora-secops-starter</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.texora.secops</groupId>
+            <artifactId>texora-iam-client</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.texora.secops</groupId>
+            <artifactId>texora-audit-sdk</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <!-- Needed explicitly: the audit SDK's aspect and SEC's SecAuditChainAspect read the
+             SecurityContext; spring-boot-starter-aop does not bring it in (pitfall 2). Version managed
+             by the Spring Boot BOM. -->
+        <dependency>
+            <groupId>org.springframework.security</groupId>
+            <artifactId>spring-security-core</artifactId>
+        </dependency>
+
         <!-- Spring Boot -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
@@ -147,6 +172,7 @@
             <plugin>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
+                 <version>${spring-boot.version}</version>
                 <configuration>
                     <image>
                         <name>texora/sec-service:${project.version}</name>

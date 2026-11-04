@@ -280,6 +280,7 @@ jobs:
           exit-code: "1"
           ignore-unfixed: true
           severity: CRITICAL,HIGH
+          trivyignores: .trivyignore
 
       - name: Log in to GitHub Container Registry
         if: github.ref == 'refs/heads/main'
@@ -304,14 +305,17 @@ jobs:
   # 8. PUBLISH LIBRARIES to internal artifact repository
   #    `mvn deploy` runs the full lifecycle (compile → test-compile →
   #    package → deploy) for every reactor module in a single invocation,
-  #    so sibling dependencies resolve from the in-memory reactor and no
+  #    so sibling dependencies resolve frohhhm the in-memory reactor and no
   #    shared .m2 artifact download is required here.
   # ──────────────────────────────────────────────────────────────────────────
   publish:
     name: Publish to Artifact Repository
     runs-on: ubuntu-latest
     needs: [build-and-test, sast, sca, container]
-    if: github.ref == 'refs/heads/main'
+    if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/develop'
+    permissions:
+      contents: read
+      packages: write
     steps:
       - uses: actions/checkout@v4
 
@@ -321,12 +325,12 @@ jobs:
           java-version: ${{ env.JAVA_VERSION }}
           distribution: temurin
           cache: maven
-          server-id: internal-nexus
-          server-username: NEXUS_USER
-          server-password: NEXUS_PASSWORD
+          server-id: github
+          server-username: GITHUB_ACTOR
+          server-password: GITHUB_TOKEN
 
       - name: Deploy all modules
         run: mvn -B deploy -DskipTests
         env:
-          NEXUS_USER: ${{ secrets.NEXUS_USER }}
-          NEXUS_PASSWORD: ${{ secrets.NEXUS_PASSWORD }}
+          GITHUB_ACTOR: ${{ github.actor }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

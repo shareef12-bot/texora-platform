@@ -1,0 +1,16 @@
+namespace: identity
+replicaCount: 2
+image:
+  repository: registry.texora.internal/secops/dc-service
+  tag: 1.0.0-SNAPSHOT
+service:
+  port: 8085
+# Secrets are NOT in values: DB password etc. come from an existing Kubernetes Secret (provisioned from SEC/vault).
+existingSecret: dc-service-secrets
+env:
+  DC_DB_URL: jdbc:postgresql://postgres.identity:5432/texora
+  DC_DB_USER: dc_app
+  DC_KAFKA_BOOTSTRAP: kafka.platform:9092
+  SSO_ISSUER_URI: https://sso.texora.internal
+  DC_API_DOCS_ENABLED: "false"
+  SPRING_PROFILES_ACTIVE: prod    # NOTE: the HRMS and sync-signer STUBS refuse to start under prod (by design)

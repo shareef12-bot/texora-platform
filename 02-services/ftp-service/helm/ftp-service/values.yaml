@@ -1,0 +1,33 @@
+namespace: texora-secops          # set to the namespace the platform team assigns to the FTP service
+image:
+  repository: registry.example.com/texora/ftp-service
+  tag: 1.0.0-SNAPSHOT
+  pullPolicy: IfNotPresent
+
+# IMPORTANT: payload staging is node-local unless you mount a shared (ReadWriteMany) volume.
+# A file quarantined on pod A must be releasable from pod A. Keep replicaCount: 1 unless
+# staging.persistence points at a shared RWX claim (or StagingStorage is swapped for object storage).
+replicaCount: 1
+
+staging:
+  sizeLimit: 20Gi
+  persistence:
+    enabled: false
+    existingClaim: ""             # production: a PVC whose storage class mounts with noexec,nosuid,nodev
+
+config:
+  dbHost: postgres.texora-secops.svc
+  dbName: texora
+  dbUser: ftp_app
+  kafkaBootstrapServers: kafka.texora-secops.svc:9092
+  iamJwkSetUri: http://sso-service.texora-secops.svc/oauth2/jwks
+  secBaseUrl: https://sec-service.texora-secops.svc
+  inspectionBaseUrl: ""           # blank => every file that needs inspection is QUARANTINED (fail closed)
+  openapiEnabled: "false"
+
+# Kubernetes Secret holding FTP_DB_PASSWORD (and FTP_FLYWAY_USER / FTP_FLYWAY_PASSWORD if migrations run as owner).
+existingSecret: ftp-service-secrets
+
+resources:
+  requests: { cpu: 250m, memory: 512Mi }
+  limits: { cpu: "1", memory: 1Gi }

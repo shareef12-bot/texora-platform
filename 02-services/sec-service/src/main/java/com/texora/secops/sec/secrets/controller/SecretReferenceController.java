@@ -3,7 +3,7 @@ package com.texora.secops.sec.secrets.controller;
 import com.texora.secops.sec.secrets.domain.SecSecretReference;
 import com.texora.secops.sec.secrets.dto.SecretReferenceResponse;
 import com.texora.secops.sec.secrets.service.SecretReferenceService;
-import com.texora.secops.sec.security.TenantContext;
+import com.texora.secops.starter.domain.TenantContext;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
 import org.springframework.data.domain.Page;
@@ -40,7 +40,7 @@ public class SecretReferenceController {
     public ResponseEntity<Page<SecSecretReference>> listReferences(
             @RequestParam String callerService,
             Pageable pageable) {
-        UUID tenantId = TenantContext.requireTenantId();
+        UUID tenantId = TenantContext.get();
         return ResponseEntity.ok(secretReferenceService.listReferences(tenantId, callerService, pageable));
     }
 
@@ -48,7 +48,7 @@ public class SecretReferenceController {
     @PreAuthorize("hasAuthority('sec.secret.write')")
     public ResponseEntity<SecSecretReference> registerReference(
             @Valid @RequestBody RegisterReferenceRequest request) {
-        UUID tenantId = TenantContext.requireTenantId();
+        UUID tenantId = TenantContext.get();
         SecSecretReference reference = secretReferenceService.registerReference(
                 tenantId, request.getLogicalName(), request.getVaultPath(),
                 request.getKmsKeyId(), request.getOwningService(), request.getClassification());
@@ -63,7 +63,7 @@ public class SecretReferenceController {
     public ResponseEntity<SecretReferenceResponse> resolveReference(
             @PathVariable String logicalName,
             @RequestParam String callerService) {
-        UUID tenantId = TenantContext.requireTenantId();
+        UUID tenantId = TenantContext.get();
         SecretReferenceResponse response = secretReferenceService.resolveReference(
                 tenantId, logicalName, callerService);
         return ResponseEntity.ok(response);
