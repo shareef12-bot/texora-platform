@@ -17,6 +17,19 @@
         Build this before any of the eight microservices.
     </description>
 
+    <distributionManagement>
+        <repository>
+            <id>github</id>
+            <name>GitHub Packages</name>
+            <url>https://maven.pkg.github.com/shareef12-bot/texora-platform</url>
+        </repository>
+        <snapshotRepository>
+            <id>github</id>
+            <name>GitHub Packages</name>
+            <url>https://maven.pkg.github.com/shareef12-bot/texora-platform</url>
+        </snapshotRepository>
+    </distributionManagement>
+
     <modules>
         <module>01-platform-foundation/texora-secops-starter</module>
         <module>01-platform-foundation/texora-iam-client</module>
