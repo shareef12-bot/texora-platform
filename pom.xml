@@ -81,7 +81,7 @@
         <jackson-bom.version>2.21.7</jackson-bom.version>
 
         <!-- OpenTelemetry -->
-        <opentelemetry-bom.version>1.41.0</opentelemetry-bom.version>
+        <opentelemetry-bom.version>1.67.0</opentelemetry-bom.version>
         <micrometer-otel.version>1.13.4</micrometer-otel.version>
 
         <!-- Kafka -->
