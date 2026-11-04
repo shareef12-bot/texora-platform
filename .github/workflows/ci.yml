@@ -305,7 +305,7 @@ jobs:
   # 8. PUBLISH LIBRARIES to internal artifact repository
   #    `mvn deploy` runs the full lifecycle (compile → test-compile →
   #    package → deploy) for every reactor module in a single invocation,
-  #    so sibling dependencies resolve from the in-memory reactor and no
+  #    so sibling dependencies resolve frohhhm the in-memory reactor and no
   #    shared .m2 artifact download is required here.
   # ──────────────────────────────────────────────────────────────────────────
   publish:
