@@ -14,7 +14,7 @@ import org.springframework.security.oauth2.jwt.JwtDecoder;
 import org.springframework.security.oauth2.jwt.NimbusJwtDecoder;
 import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
-
+import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 /**
  * Auto-configuration for the IAM client library.
  *
@@ -43,6 +43,7 @@ public class IamAutoConfiguration {
     }
 
     @Bean
+    @ConditionalOnMissingBean(JwtDecoder.class)
     public JwtDecoder jwtDecoder() {
         return NimbusJwtDecoder
             .withJwkSetUri(iamProperties.getJwksUri())
@@ -50,6 +51,7 @@ public class IamAutoConfiguration {
     }
 
     @Bean
+    @ConditionalOnMissingBean(TokenValidator.class)
     public TokenValidator tokenValidator(JwtDecoder jwtDecoder) {
         return new TokenValidator(jwtDecoder);
     }

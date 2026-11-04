@@ -90,6 +90,17 @@ springdoc:
     path: /api/v1/docs
     enabled: ${SIEM_SWAGGER_ENABLED:true}
 
+    
+# Disable the shared IAM interceptor for SIEM.
+# SIEM uses its own RbacInterceptor.
+texora:
+  iam:
+    jwks-uri: ${SIEM_SSO_JWKS_URI:https://sso.texora.internal/realms/texora/protocol/openid-connect/certs}
+    issuer-uri: ${SIEM_SSO_ISSUER_URI:https://sso.texora.internal/realms/texora}
+    rbac:
+      enabled: false
+
+
 siem:
   ingestion:
     kafka-topics: dc.audit.events,ldap.audit.events,sso.audit.events,ftp.audit.events,cgi.audit.events,vpn.audit.events,sec.audit.events,ilmora.audit.events,texora-jobs.audit.events,taskorbit.audit.events,hrms.audit.events,crm.audit.events

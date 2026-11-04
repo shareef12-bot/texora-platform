@@ -6,7 +6,6 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
 import jakarta.persistence.Id;
-import jakarta.persistence.Lob;
 import jakarta.persistence.Table;
 
 import java.time.Instant;
@@ -33,7 +32,6 @@ public class SiemCorrelationRule {
     @Column(name = "name", nullable = false, length = 255)
     private String name;
 
-    @Lob
     @Column(name = "rule_definition", nullable = false)
     private String ruleDefinition;
 

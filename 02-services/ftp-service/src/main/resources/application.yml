@@ -40,6 +40,10 @@ spring:
           jwk-set-uri: ${TEXORA_IAM_JWK_SET_URI:http://localhost:8081/oauth2/jwks}
 
 texora:
+  iam:
+    jwks-uri: ${TEXORA_IAM_JWK_SET_URI:http://localhost:8081/oauth2/jwks}
+    rbac:
+      enabled: false   # FTP registers its own RbacInterceptor via FtpWebConfig
   audit:
     topic: ftp.audit.events   # property name is a GUESS - see README "unsure" list
 

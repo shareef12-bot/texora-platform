@@ -14,7 +14,7 @@ import org.hibernate.type.SqlTypes;
 /**
  * Append-only. @Immutable stops Hibernate issuing UPDATEs; the database trigger (V2) stops everything else.
  */
-@Entity
+@Entity(name = "FtpAuditEvent")
 @Immutable
 @Table(name = "ftp_audit_event", schema = "ftp")
 public class AuditEvent {

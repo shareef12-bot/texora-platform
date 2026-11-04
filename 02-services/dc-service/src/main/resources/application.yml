@@ -63,6 +63,11 @@ springdoc:
   swagger-ui:
     enabled: ${DC_API_DOCS_ENABLED:true}
 
+texora:
+  iam:
+    rbac:
+      enabled: false   # DC has its own fail-closed RbacInterceptor; suppress the library duplicate
+
 dc:
   topics:
     audit: dc.audit.events

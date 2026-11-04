@@ -1,13 +1,12 @@
 package com.texora.secops.siem.config;
 
-import com.texora.secops.iam.token.TokenValidator;
+
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
-import org.springframework.security.oauth2.jwt.JwtDecoder;
-import org.springframework.security.oauth2.jwt.NimbusJwtDecoder;
+
 import org.springframework.security.web.SecurityFilterChain;
 
 /**
@@ -49,14 +48,5 @@ public class SecurityConfig {
         return http.build();
     }
 
-    @Bean
-    public JwtDecoder jwtDecoder(org.springframework.core.env.Environment env) {
-        String jwkSetUri = env.getProperty("spring.security.oauth2.resourceserver.jwt.jwk-set-uri");
-        return NimbusJwtDecoder.withJwkSetUri(jwkSetUri).build();
-    }
 
-    @Bean
-    public TokenValidator tokenValidator(JwtDecoder jwtDecoder) {
-        return new TokenValidator(jwtDecoder);
-    }
 }

@@ -6,7 +6,6 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
 import jakarta.persistence.Id;
-import jakarta.persistence.Lob;
 import jakarta.persistence.Table;
 
 import java.time.Instant;
@@ -48,8 +47,7 @@ public class SiemIngestionLog {
     @Column(name = "error_summary")
     private String errorSummary;
 
-    @Lob
-    @Column(name = "raw_payload", nullable = false)
+        @Column(name = "raw_payload", nullable = false)
     private String rawPayload;
 
     protected SiemIngestionLog() {

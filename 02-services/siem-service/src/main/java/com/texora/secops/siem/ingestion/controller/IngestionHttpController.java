@@ -29,7 +29,7 @@ public class IngestionHttpController {
     }
 
     @PostMapping("/api/v1/ingest/http/{sourceKey}")
-    public ResponseEntity<Void> ingest(@PathVariable String sourceKey,
+    public ResponseEntity<Void> ingest(@PathVariable("sourceKey") String sourceKey,
                                         @RequestHeader(value = "X-Client-Cert-CN", required = false) String clientCertCn,
                                         @RequestBody String rawBody,
                                         HttpServletRequest request) {

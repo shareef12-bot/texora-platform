@@ -30,6 +30,7 @@ import org.testcontainers.utility.DockerImageName;
 
 import java.nio.file.Files;
 import java.sql.Timestamp;
+import java.time.Duration;
 import java.time.Instant;
 import java.util.List;
 import java.util.Set;
@@ -59,7 +60,7 @@ class TransferApiIntegrationTest {
     static PostgreSQLContainer<?> pg = new PostgreSQLContainer<>("postgres:16-alpine");
 
     @Container
-    static KafkaContainer kafka = new KafkaContainer(DockerImageName.parse("confluentinc/cp-kafka:7.6.1"));
+    static KafkaContainer kafka = new KafkaContainer(DockerImageName.parse("confluentinc/cp-kafka:7.6.1")).withStartupTimeout(Duration.ofMinutes(5));
 
     @DynamicPropertySource
     static void properties(DynamicPropertyRegistry r) throws Exception {
@@ -77,6 +78,7 @@ class TransferApiIntegrationTest {
                 throw new IllegalStateException(e);
             }
         });
+        r.add("texora.iam.jwks-uri", () -> "http://localhost:1/jwks"); // dummy, unreachable: TokenValidator is mocked, no token is decoded
         r.add("ftp.transfer.retry-backoff-ms", () -> "0");
     }
 

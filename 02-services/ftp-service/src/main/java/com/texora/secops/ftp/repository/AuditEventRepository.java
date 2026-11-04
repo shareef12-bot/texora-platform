@@ -10,6 +10,7 @@ import java.util.UUID;
  * Deliberately NOT a JpaRepository: only save (insert) and read operations exist, so no code path can even express
  * an update or delete of an audit row. The database trigger (V2) enforces the same rule underneath.
  */
+@org.springframework.stereotype.Repository("ftpAuditEventRepository")
 public interface AuditEventRepository extends Repository<AuditEvent, UUID>, JpaSpecificationExecutor<AuditEvent> {
 
     AuditEvent save(AuditEvent event);

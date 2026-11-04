@@ -49,6 +49,7 @@ class SiemIntegrationTest {
         registry.add("spring.datasource.username", postgres::getUsername);
         registry.add("spring.datasource.password", postgres::getPassword);
         registry.add("spring.kafka.bootstrap-servers", kafka::getBootstrapServers);
+        registry.add("texora.iam.jwks-uri", () -> "http://localhost:1/jwks"); // dummy, unreachable: no token is ever decoded in these tests
         registry.add("siem.sec.base-url", () -> "http://localhost:1"); // deliberately unreachable - exercises fail-closed
     }
 
