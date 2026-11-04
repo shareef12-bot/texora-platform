@@ -116,7 +116,7 @@ jobs:
           cache: maven
 
       - name: Restore built platform artifacts
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v7
         with:
           name: texora-m2-artifacts
           path: ~/.m2/repository/com/texora
@@ -166,7 +166,7 @@ jobs:
           cache: maven
 
       - name: Restore built platform artifacts
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v7
         with:
           name: texora-m2-artifacts
           path: ~/.m2/repository/com/texora
@@ -222,7 +222,7 @@ jobs:
           cache: maven
 
       - name: Restore built platform artifacts
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v7
         with:
           name: texora-m2-artifacts
           path: ~/.m2/repository/com/texora
