@@ -212,6 +212,27 @@
           </execution>
         </executions>
       </plugin>
+      <!-- Without this, *IT.java classes (OAuth2AuthorizeFlowIT,
+           ApplicationRegistrationControllerIT — the Testcontainers-backed
+           tests that actually exercise real login/token flows end-to-end)
+           are silently never run by `mvn verify`, `mvn test`, or CI.
+           Surefire (above, via the default-test execution) only picks up
+           *Test.java; Failsafe is what picks up *IT.java, bound to the
+           integration-test and verify phases so a failure here fails the
+           build the same way a unit test failure does. -->
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-failsafe-plugin</artifactId>
+        <version>3.5.2</version>
+        <executions>
+          <execution>
+            <goals>
+              <goal>integration-test</goal>
+              <goal>verify</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
       <!-- CI gate: fail the build if Lombok ever appears in the dependency tree -->
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
