@@ -46,6 +46,12 @@ spring:
         jwt:
           issuer-uri: ${IAM_ISSUER_URI:http://iam-service/realms/texora}
 
+texora:
+  iam:
+    jwks-uri: ${QAP_JWK_SET_URI:http://sso-service:8081/.well-known/jwks.json}
+    rbac:
+      enabled: false   # QAP has its own fail-closed RbacInterceptor (security\RbacInterceptor.java)
+
 # QAP service configuration
 qap:
   sec:
@@ -56,6 +62,7 @@ qap:
 
   flaky:
     quarantine-threshold: ${QAP_FLAKY_THRESHOLD:0.30}
+    min-runs-before-quarantine: ${QAP_FLAKY_MIN_RUNS:5}
 
   test-runner:
     timeout-seconds: ${QAP_TEST_TIMEOUT:30}

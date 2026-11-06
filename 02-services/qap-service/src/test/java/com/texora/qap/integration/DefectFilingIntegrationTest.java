@@ -38,7 +38,8 @@ class DefectFilingIntegrationTest {
 
     @Container
     static KafkaContainer kafka = new KafkaContainer(
-            DockerImageName.parse("confluentinc/cp-kafka:7.6.0"));
+            DockerImageName.parse("confluentinc/cp-kafka:7.6.0"))
+            .withStartupTimeout(java.time.Duration.ofMinutes(5));
 
     @DynamicPropertySource
     static void overrideProperties(DynamicPropertyRegistry registry) {
@@ -46,17 +47,23 @@ class DefectFilingIntegrationTest {
         registry.add("spring.datasource.username", postgres::getUsername);
         registry.add("spring.datasource.password", postgres::getPassword);
         registry.add("spring.kafka.bootstrap-servers", kafka::getBootstrapServers);
+        registry.add("texora.iam.jwks-uri", () -> "http://localhost:1/jwks");
         registry.add("spring.security.oauth2.resourceserver.jwt.issuer-uri",
                 () -> "http://localhost:0/disabled");
     }
 
     @Autowired private DefectFilingService defectFilingService;
     @Autowired private QapDefectRepository defectRepository;
+    @Autowired private org.springframework.jdbc.core.JdbcTemplate jdbc;
+    @Autowired private com.texora.qap.repository.QapTestRunRepository runRepository;
+    @Autowired private com.texora.qap.repository.QapTestResultRepository resultRepository;
+    private UUID runId;
+    @Autowired private com.texora.qap.repository.QapFlakyTestRecordRepository flakyRepository;
 
     @Test
     void sameFailureOnlyCreatesOneDefect() {
         UUID tenantId   = UUID.randomUUID();
-        UUID testCaseId = UUID.randomUUID();
+        UUID testCaseId = createTestCase(tenantId);
 
         QapTestResult result = buildResult(tenantId, testCaseId,
                 "payment-service", "/api/v1/pay", "TimeoutException");
@@ -79,7 +86,7 @@ class DefectFilingIntegrationTest {
     @Test
     void differentFailuresCreateSeparateDefects() {
         UUID tenantId   = UUID.randomUUID();
-        UUID testCaseId = UUID.randomUUID();
+        UUID testCaseId = createTestCase(tenantId);
 
         QapTestResult r1 = buildResult(tenantId, testCaseId,
                 "svc-a", "/api/foo", "NullPointerException");
@@ -93,9 +100,20 @@ class DefectFilingIntegrationTest {
         assertThat(count).isEqualTo(2);
     }
 
+    private UUID createTestCase(UUID tenantId) {
+        UUID suiteId = UUID.randomUUID();
+        UUID caseId = UUID.randomUUID();
+        jdbc.update("insert into qap.qap_test_suite (id, tenant_id, name, target_system, suite_type, status) values (?, ?, 'it-suite', 'it-system', 'API', 'ACTIVE')", suiteId, tenantId);
+        jdbc.update("insert into qap.qap_test_case (id, suite_id, tenant_id, name) values (?, ?, ?, 'it-case')", caseId, suiteId, tenantId);
+        flakyRepository.save(new com.texora.qap.domain.QapFlakyTestRecord(UUID.randomUUID(), caseId, tenantId, 100, 0, java.math.BigDecimal.ZERO, false, Instant.now()));
+        runId = UUID.randomUUID();
+        runRepository.save(new com.texora.qap.domain.QapTestRun(runId, suiteId, tenantId, "MANUAL", Instant.now(), "RUNNING"));
+        return caseId;
+    }
+
     private QapTestResult buildResult(UUID tenantId, UUID testCaseId,
                                        String service, String endpoint, String exception) {
-        QapTestResult r = new QapTestResult();
+        QapTestResult r = new QapTestResult(UUID.randomUUID(), runId, testCaseId, "FAIL", 0L, Instant.now());
         r.setId(UUID.randomUUID());
         r.setTenantId(tenantId);
         r.setTestCaseId(testCaseId);
@@ -104,6 +122,6 @@ class DefectFilingIntegrationTest {
         r.setCorrelatedEndpoint(endpoint);
         r.setCorrelatedExceptionType(exception);
         r.setExecutedAt(Instant.now());
-        return r;
+        return resultRepository.save(r);
     }
 }

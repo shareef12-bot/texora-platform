@@ -6,6 +6,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
+import org.springframework.stereotype.Repository;
 
 import java.time.Instant;
 import java.util.UUID;
@@ -15,6 +16,7 @@ import java.util.UUID;
  * Every query is tenant-filtered (requirement B.5).
  * This table is append-only; no update or delete methods are exposed.
  */
+@Repository("ldapAuditEventRepository")
 public interface AuditEventRepository extends JpaRepository<LdapAuditEvent, UUID> {
 
     Page<LdapAuditEvent> findAllByTenantIdOrderByOccurredAtDesc(UUID tenantId, Pageable pageable);
@@ -23,8 +25,8 @@ public interface AuditEventRepository extends JpaRepository<LdapAuditEvent, UUID
            "AND (:targetType IS NULL OR e.targetType = :targetType) " +
            "AND (:targetId IS NULL OR e.targetId = :targetId) " +
            "AND (:action IS NULL OR e.action = :action) " +
-           "AND (:from IS NULL OR e.occurredAt >= :from) " +
-           "AND (:to IS NULL OR e.occurredAt <= :to) " +
+           "AND e.occurredAt >= :from " +
+           "AND e.occurredAt <= :to " +
            "ORDER BY e.occurredAt DESC")
     Page<LdapAuditEvent> search(@Param("tenantId") UUID tenantId,
                                  @Param("action") String action,

@@ -1,6 +1,8 @@
 package com.texora.secops.ldap;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.texora.secops.iam.token.TokenClaims;
+import com.texora.secops.iam.token.TokenValidator;
 import com.texora.secops.ldap.schema.dto.AttributeRequest;
 import com.texora.secops.ldap.schema.dto.SchemaDefinitionRequest;
 import org.apache.kafka.clients.admin.AdminClient;
@@ -13,6 +15,7 @@ import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMock
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
 import org.springframework.test.web.servlet.MockMvc;
@@ -22,10 +25,15 @@ import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 import org.testcontainers.utility.DockerImageName;
 
+import java.time.Duration;
+import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -63,7 +71,8 @@ class LdapServiceIntegrationTest {
 
     @Container
     static KafkaContainer kafka = new KafkaContainer(
-            DockerImageName.parse("confluentinc/cp-kafka:7.6.1"));
+            DockerImageName.parse("confluentinc/cp-kafka:7.6.1"))
+            .withStartupTimeout(Duration.ofMinutes(5));
 
     @DynamicPropertySource
     static void overrideProperties(DynamicPropertyRegistry registry) {
@@ -73,6 +82,8 @@ class LdapServiceIntegrationTest {
         registry.add("spring.kafka.bootstrap-servers", kafka::getBootstrapServers);
         // Use stub engine in integration tests — no real LDAP server
         registry.add("ldap.engine.host", () -> "STUB");
+        // Dummy unreachable JWKS URL so the real TokenValidator can be built (no token is ever validated against it)
+        registry.add("texora.iam.jwks-uri", () -> "http://localhost:1/jwks");
     }
 
     @BeforeAll
@@ -91,6 +102,24 @@ class LdapServiceIntegrationTest {
 
     @Autowired
     private ObjectMapper objectMapper;
+
+    // The real RbacInterceptor runs. Only the JWT decoding is replaced by a mock (same method as DcApiIT).
+    @MockitoBean
+    private TokenValidator tokenValidator;
+
+    private String adminToken() {
+        String header = "Bearer test-" + UUID.randomUUID();
+        String[] roles = {"ldap.schema.write", "ldap.bind.write", "ldap.bind.read", "ldap.audit.read"};
+        TokenClaims c = mock(TokenClaims.class);
+        when(c.getTenantId()).thenReturn(UUID.randomUUID());
+        when(c.getSubject()).thenReturn(UUID.randomUUID());
+        when(c.getRoles()).thenReturn(new HashSet<String>(Arrays.asList(roles)));
+        for (String role : roles) {
+            when(c.hasRole(role)).thenReturn(true);
+        }
+        when(tokenValidator.validate(header)).thenReturn(c);
+        return header;
+    }
 
     // -------------------------------------------------------------------------
     // Health / Actuator
@@ -122,8 +151,7 @@ class LdapServiceIntegrationTest {
         mockMvc.perform(post("/api/v1/schema/attribute-management")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(req))
-                        .header("X-Integration-Actor", UUID.randomUUID().toString())
-                        .header("X-Integration-Tenant", UUID.randomUUID().toString()))
+                        .header("Authorization", adminToken()))
                 .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.objectClass").value("texoraDeviceIT"))
                 .andExpect(jsonPath("$.status").value("DRAFT"));
@@ -139,8 +167,7 @@ class LdapServiceIntegrationTest {
         mockMvc.perform(post("/api/v1/schema/attribute-management")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(req))
-                        .header("X-Integration-Actor", UUID.randomUUID().toString())
-                        .header("X-Integration-Tenant", UUID.randomUUID().toString()))
+                        .header("Authorization", adminToken()))
                 .andExpect(status().isUnprocessableEntity());
     }
 
@@ -159,8 +186,7 @@ class LdapServiceIntegrationTest {
         mockMvc.perform(post("/api/v1/secure-bind-configuration")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(req))
-                        .header("X-Integration-Actor", UUID.randomUUID().toString())
-                        .header("X-Integration-Tenant", UUID.randomUUID().toString()))
+                        .header("Authorization", adminToken()))
                 .andExpect(status().isUnprocessableEntity());
     }
 
@@ -168,8 +194,7 @@ class LdapServiceIntegrationTest {
     @DisplayName("GET /api/v1/secure-bind-configuration → 200 empty list for new tenant")
     void listBindConfigs_emptyForNewTenant() throws Exception {
         mockMvc.perform(get("/api/v1/secure-bind-configuration")
-                        .header("X-Integration-Actor", UUID.randomUUID().toString())
-                        .header("X-Integration-Tenant", UUID.randomUUID().toString()))
+                        .header("Authorization", adminToken()))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$").isArray());
     }
@@ -182,8 +207,7 @@ class LdapServiceIntegrationTest {
     @DisplayName("GET /api/v1/audit/events → 200 paged response")
     void listAuditEvents_returnsPage() throws Exception {
         mockMvc.perform(get("/api/v1/audit/events")
-                        .header("X-Integration-Actor", UUID.randomUUID().toString())
-                        .header("X-Integration-Tenant", UUID.randomUUID().toString()))
+                        .header("Authorization", adminToken()))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.content").isArray());
     }

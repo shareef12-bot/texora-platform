@@ -16,7 +16,7 @@ import org.hibernate.type.SqlTypes;
  *
  * <p>Generated source, committed as plain Java: explicit accessors, plain Java only (Shared Standards B.2).
  */
-@Entity
+@Entity(name = "CgiAuditEvent")
 @Table(name = "cgi_audit_event", schema = "cgi")
 public class AuditEvent {
 

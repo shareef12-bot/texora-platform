@@ -170,6 +170,7 @@ public class TestRunOrchestrationService {
             QapTestResult result = new QapTestResult(
                     UUID.randomUUID(), run.getId(), tc.getId(),
                     "INCONCLUSIVE", 0L, Instant.now());
+            result.setTenantId(run.getTenantId());
             return result;
         }
     }
@@ -187,6 +188,7 @@ public class TestRunOrchestrationService {
         QapTestResult result = new QapTestResult(
                 UUID.randomUUID(), run.getId(), tc.getId(),
                 outcome, raw.durationMs(), Instant.now());
+        result.setTenantId(run.getTenantId());
 
         result.setRedactedRequest(raw.redactedRequest());
         result.setRedactedResponse(raw.redactedResponse());
@@ -223,6 +225,7 @@ public class TestRunOrchestrationService {
         QapTestResult result = new QapTestResult(
                 UUID.randomUUID(), run.getId(), tc.getId(),
                 outcome, raw.durationMs(), Instant.now());
+        result.setTenantId(run.getTenantId());
 
         result.setTraceId(raw.traceId());
         flakyTestDetectionService.recordOutcome(tc.getId(), run.getTenantId(), raw.passed());

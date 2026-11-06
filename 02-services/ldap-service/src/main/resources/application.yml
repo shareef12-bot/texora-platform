@@ -92,6 +92,13 @@ ldap:
   sec:
     policy-endpoint: ${SEC_POLICY_ENDPOINT:http://sec-service:8082/api/v1/policies}
 
+# LDAP has its own fail-closed RbacInterceptor (WebMvcConfig). Turn off the shared one to avoid a duplicate 'rbacInterceptor' bean.
+texora:
+  iam:
+    jwks-uri: ${LDAP_JWK_SET_URI:http://sso-service:8081/.well-known/jwks.json}
+    rbac:
+      enabled: false
+
 logging:
   level:
     com.texora.secops.ldap: INFO

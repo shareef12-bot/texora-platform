@@ -98,7 +98,7 @@ class VpnFlowIntegrationTest extends VpnIntegrationTestSupport {
         assertThat(post("/api/v1/config", admin, map("key", "session.max-minutes", "value", "60")).getStatusCode().value()).isEqualTo(200);
         // an interval that would let sessions go stale past the max-unverified horizon must be refused
         assertThat(post("/api/v1/config", admin, map("key", "session.revalidation-interval-seconds", "value", "600")).getStatusCode().value()).isEqualTo(422);
-        assertThat(get("/api/v1/config", admin).getStatusCode().value()).isEqualTo(200);
+        assertThat(getList("/api/v1/config", admin).getStatusCode().value()).isEqualTo(200);
     }
 
     @Test
@@ -118,7 +118,7 @@ class VpnFlowIntegrationTest extends VpnIntegrationTestSupport {
         var list = get("/api/v1/session-revocation?status=ACTIVE", f.admin);
         assertThat(list.getStatusCode().value()).isEqualTo(200);
         assertThat(list.getBody().toString()).contains(sessionId.toString());
-        assertThat(get("/api/v1/policies", f.admin).getStatusCode().value()).isEqualTo(200);
+        assertThat(getList("/api/v1/policies", f.admin).getStatusCode().value()).isEqualTo(200);
         assertThat(get("/api/v1/gateway-integration", f.admin).getBody().toString()).contains("NOT a real VPN");
 
         // tenant isolation: another tenant's admin gets 403, not an empty result and not success
