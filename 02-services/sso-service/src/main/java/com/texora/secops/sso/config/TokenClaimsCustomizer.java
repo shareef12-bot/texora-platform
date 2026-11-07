@@ -21,7 +21,8 @@ public class TokenClaimsCustomizer {
 
     @Bean
     public OAuth2TokenCustomizer<JwtEncodingContext> platformClaimsCustomizer(
-            SsoApplicationRepository applicationRepository) {
+            SsoApplicationRepository applicationRepository,
+            @org.springframework.beans.factory.annotation.Value("${texora.sso.local-roles:}") List<String> localRoles) {
         return context -> {
             if (!OAuth2TokenType.ACCESS_TOKEN.equals(context.getTokenType())) {
                 return;
@@ -31,7 +32,7 @@ public class TokenClaimsCustomizer {
                     .orElseThrow(() -> new IllegalStateException(
                             "No application for clientId=" + clientId + " - refusing to issue token"));
             context.getClaims().claim("ten", application.getTenantId().toString());
-            context.getClaims().claim("roles", List.of());
+            context.getClaims().claim("roles", localRoles.stream().filter(r -> !r.isBlank()).toList());
         };
     }
 }
