@@ -59,6 +59,7 @@ class DcApiIT {
         r.add("spring.datasource.username", POSTGRES::getUsername);
         r.add("spring.datasource.password", POSTGRES::getPassword);
         r.add("spring.kafka.bootstrap-servers", KAFKA::getBootstrapServers);
+        r.add("texora.iam.jwks-uri", () -> "http://localhost:1/jwks");
     }
 
     @Autowired

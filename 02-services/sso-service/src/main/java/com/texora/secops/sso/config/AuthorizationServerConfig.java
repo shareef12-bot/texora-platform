@@ -84,7 +84,7 @@ public class AuthorizationServerConfig {
 
     @Bean
     public AuthorizationServerSettings authorizationServerSettings(
-            @Value("${texora.sso.issuer-uri:${SSO_ISSUER_URI:https://sso.texora.internal}}") String issuer) {
+            @Value("${spring.security.oauth2.authorizationserver.issuer}") String issuer) {
         return AuthorizationServerSettings.builder()
                 .issuer(issuer)
                 .build();

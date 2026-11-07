@@ -65,6 +65,7 @@ springdoc:
 
 texora:
   iam:
+    jwks-uri: ${SSO_JWKS_URI:http://localhost:9000/.well-known/jwks.json}
     rbac:
       enabled: false   # DC has its own fail-closed RbacInterceptor; suppress the library duplicate
 

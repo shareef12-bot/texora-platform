@@ -14,7 +14,7 @@ import org.hibernate.type.SqlTypes;
 /**
  * Append-only and immutable (Hibernate @Immutable + DB trigger). The platform reference for who had network access and when.
  */
-@Entity
+@Entity(name = "VpnAuditEvent")
 @Table(name = "vpn_audit_event", schema = "vpn")
 @Immutable
 public class AuditEvent {
