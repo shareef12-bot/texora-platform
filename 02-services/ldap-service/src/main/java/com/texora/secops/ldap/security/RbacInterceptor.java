@@ -7,6 +7,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.springframework.web.servlet.HandlerInterceptor;
 
@@ -34,9 +35,17 @@ public class RbacInterceptor implements HandlerInterceptor {
     private final TokenValidator tokenValidator;
     private final EndpointRoleRegistry roleRegistry;
 
-    public RbacInterceptor(TokenValidator tokenValidator, EndpointRoleRegistry roleRegistry) {
+    // DEV-ONLY: when true (application-local.yml only), /api/v1/bind bypasses
+    // token validation and RBAC so the local stub controller can be reached
+    // without a bearer token. Never true in any non-local profile.
+    private final boolean localBindPassthrough;
+
+    public RbacInterceptor(TokenValidator tokenValidator,
+                           EndpointRoleRegistry roleRegistry,
+                           @Value("${texora.ldap.local-bind-passthrough:false}") boolean localBindPassthrough) {
         this.tokenValidator = tokenValidator;
         this.roleRegistry = roleRegistry;
+        this.localBindPassthrough = localBindPassthrough;
     }
 
     @Override
@@ -46,6 +55,11 @@ public class RbacInterceptor implements HandlerInterceptor {
 
         // Actuator health/metrics — no auth required (internal-network-only paths)
         if (path.startsWith("/actuator/")) {
+            return true;
+        }
+
+        // DEV-ONLY: local bind stub — bypassed only when flag is true (application-local.yml)
+        if (localBindPassthrough && "/api/v1/bind".equals(path)) {
             return true;
         }
 

@@ -10,7 +10,7 @@ spring:
   datasource:
     url: ${LDAP_DB_URL:jdbc:postgresql://localhost:5432/texora_secops}
     username: ${LDAP_DB_USERNAME:ldap_svc}
-    password: ${LDAP_DB_PASSWORD:changeme}
+    password: ${LDAP_DB_PASSWORD}
     hikari:
       connection-timeout: 5000
       maximum-pool-size: 10

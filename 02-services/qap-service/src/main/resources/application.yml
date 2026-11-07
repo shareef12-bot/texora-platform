@@ -9,7 +9,7 @@ spring:
   datasource:
     url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://localhost:5432/texora}
     username: ${SPRING_DATASOURCE_USERNAME:texora}
-    password: ${SPRING_DATASOURCE_PASSWORD:texora}
+    password: ${SPRING_DATASOURCE_PASSWORD}
     hikari:
       maximum-pool-size: 10
       minimum-idle: 2

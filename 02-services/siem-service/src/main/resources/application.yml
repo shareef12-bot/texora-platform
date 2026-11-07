@@ -5,7 +5,7 @@ spring:
   datasource:
     url: ${SIEM_DB_URL:jdbc:postgresql://localhost:5432/texora_secops}
     username: ${SIEM_DB_USER:siem_app}
-    password: ${SIEM_DB_PASSWORD:changeme}
+    password: ${SIEM_DB_PASSWORD}
     hikari:
       schema: siem
       maximum-pool-size: ${SIEM_DB_POOL_SIZE:20}
