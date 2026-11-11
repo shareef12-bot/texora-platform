@@ -1,45 +1,52 @@
 package com.texora.secops.ldap.sync.consumer;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.texora.secops.ldap.audit.LdapAuditHelper;
-import com.texora.secops.ldap.domain.LdapAuditEvent;
 import com.texora.secops.ldap.sync.service.DirectoryReconciliationService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.kafka.annotation.KafkaListener;
+import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.kafka.support.Acknowledgment;
 import org.springframework.kafka.support.KafkaHeaders;
 import org.springframework.messaging.handler.annotation.Header;
 import org.springframework.messaging.handler.annotation.Payload;
 import org.springframework.stereotype.Component;
 
-import java.util.UUID;
+import java.util.List;
+import java.util.Map;
+import java.util.regex.Pattern;
 
 /**
- * Consumes {@code dc.sync.requested} Kafka events and delegates to
- * {@link DirectoryReconciliationService}.
- *
- * <p>Uses manual acknowledgement — the offset is committed only after the
- * reconciliation attempt has been recorded in the database (PENDING or otherwise).
- * If the engine is unreachable the message is still acknowledged but the
- * sync state is recorded as PENDING for the retry scheduler.
+ * Consumes DC's sync envelope from dc.sync.requested. Fail-closed:
+ * an invalid message goes to the dead-letter topic and is never applied;
+ * the offset is committed only after the sync state is saved.
  */
 @Component
 public class DcSyncEventConsumer {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(DcSyncEventConsumer.class);
+    private static final int SUPPORTED_VERSION = 1;
+    private static final List<String> OPERATIONS = List.of("UPSERT", "DELETE");
+    // Letters, digits, dot, underscore, hyphen only: blocks LDAP DN injection.
+    private static final Pattern SAFE_USERNAME = Pattern.compile("^[A-Za-z0-9._-]{1,64}$");
 
     private final DirectoryReconciliationService reconciliationService;
-    private final LdapAuditHelper auditHelper;
     private final ObjectMapper objectMapper;
+    private final KafkaTemplate<String, String> kafkaTemplate;
+
+    @Value("${ldap.kafka.topics.dc-sync-requested}")
+    private String topic;
+
+    @Value("${ldap.engine.base-dn:dc=texora,dc=internal}")
+    private String baseDn;
 
     public DcSyncEventConsumer(DirectoryReconciliationService reconciliationService,
-                                LdapAuditHelper auditHelper,
-                                ObjectMapper objectMapper) {
+                               ObjectMapper objectMapper,
+                               KafkaTemplate<String, String> kafkaTemplate) {
         this.reconciliationService = reconciliationService;
-        this.auditHelper = auditHelper;
         this.objectMapper = objectMapper;
+        this.kafkaTemplate = kafkaTemplate;
     }
 
     @KafkaListener(
@@ -47,68 +54,48 @@ public class DcSyncEventConsumer {
             groupId = "${spring.kafka.consumer.group-id}",
             containerFactory = "kafkaListenerContainerFactory"
     )
-    public void onDcSyncRequested(@Payload String payload,
-                                   @Header(KafkaHeaders.RECEIVED_TOPIC) String topic,
-                                   @Header(KafkaHeaders.RECEIVED_PARTITION) int partition,
-                                   @Header(KafkaHeaders.OFFSET) long offset,
-                                   Acknowledgment ack) {
-        LOGGER.info("Received dc.sync.requested event on topic={} partition={} offset={}", topic, partition, offset);
-
-        DcSyncEvent event = null;
+    public void onDcSyncRequested(@Payload String raw,
+                                  @Header(KafkaHeaders.OFFSET) long offset,
+                                  Acknowledgment ack) {
         try {
-            event = objectMapper.readValue(payload, DcSyncEvent.class);
-        } catch (Exception e) {
-            LOGGER.error("Failed to deserialize dc.sync.requested payload at offset={}: {}", offset, payload, e);
-            // Acknowledge so we don't get stuck on a poison pill
+            DcSyncEnvelope env = objectMapper.readValue(raw, DcSyncEnvelope.class);
+            validate(env);
+            Map<?, ?> p = objectMapper.readValue(env.getPayload(), Map.class);
+            String username = p.get("username") == null ? "" : String.valueOf(p.get("username"));
+            if (!SAFE_USERNAME.matcher(username).matches()) {
+                throw new IllegalArgumentException("unsafe or missing username");
+            }
+            String dn = "uid=" + username + ",ou=users," + baseDn;
+            Map<String, List<String>> attrs = "DELETE".equals(env.getOperation())
+                    ? Map.of() : reconciliationService.parseAttributes(env.getPayload());
+            reconciliationService.applySync(env.getTenantId(), dn, env.getEntityId(),
+                    env.getOperation(), env.getPayload(), attrs, null);
             ack.acknowledge();
-            return;
+        } catch (IllegalArgumentException | com.fasterxml.jackson.core.JsonProcessingException e) {
+            LOGGER.error("Rejecting invalid sync message at offset={}: {}", offset, e.getMessage());
+            try {
+                kafkaTemplate.send(topic + ".dlq", raw).get(5, java.util.concurrent.TimeUnit.SECONDS);
+                ack.acknowledge();
+            } catch (Exception dlqFailure) {
+                // Not acknowledged: the message is re-read rather than lost.
+                LOGGER.error("Dead-letter publish failed at offset={}", offset, dlqFailure);
+            }
         }
-
-        UUID tenantId = event.getTenantId();
-        String entryDn = event.getEntryDn();
-
-        try {
-            reconciliationService.reconcileEntry(tenantId, entryDn, event.getRequestedBy());
-        } catch (Exception e) {
-            // Log but do not re-throw; sync state is recorded as PENDING for retry scheduler
-            LOGGER.error("Reconciliation failed for dn='{}' tenant={} — will retry via scheduler",
-                    entryDn, tenantId, e);
-            auditHelper.record(tenantId, event.getRequestedBy(),
-                    "DC_SYNC_FAILED", "LdapSyncState", entryDn,
-                    LdapAuditEvent.Outcome.FAILURE, null);
-        } finally {
-            ack.acknowledge();
-        }
+        // Any other exception (e.g. database down) is not acknowledged, so the message is re-read.
     }
 
-    // ---------------------------------------------------------------------------
-    // Inner event record (avoids a separate shared DTO with uncertain class name)
-    // ---------------------------------------------------------------------------
-
-    public static class DcSyncEvent {
-
-        @JsonProperty("tenantId")
-        private UUID tenantId;
-
-        @JsonProperty("entryDn")
-        private String entryDn;
-
-        @JsonProperty("requestedBy")
-        private UUID requestedBy;
-
-        @JsonProperty("requestedAt")
-        private String requestedAt;
-
-        public DcSyncEvent() {
+    private void validate(DcSyncEnvelope e) {
+        if (e.getVersion() == null || e.getVersion() != SUPPORTED_VERSION) {
+            throw new IllegalArgumentException("unsupported version");
         }
-
-        public UUID getTenantId() { return tenantId; }
-        public void setTenantId(UUID tenantId) { this.tenantId = tenantId; }
-        public String getEntryDn() { return entryDn; }
-        public void setEntryDn(String entryDn) { this.entryDn = entryDn; }
-        public UUID getRequestedBy() { return requestedBy; }
-        public void setRequestedBy(UUID requestedBy) { this.requestedBy = requestedBy; }
-        public String getRequestedAt() { return requestedAt; }
-        public void setRequestedAt(String requestedAt) { this.requestedAt = requestedAt; }
+        if (e.getTenantId() == null || e.getEntityId() == null || e.getPayload() == null) {
+            throw new IllegalArgumentException("missing tenantId, entityId or payload");
+        }
+        if (!"USER".equals(e.getEntityType())) {
+            throw new IllegalArgumentException("unsupported entityType");
+        }
+        if (!OPERATIONS.contains(e.getOperation())) {
+            throw new IllegalArgumentException("unsupported operation");
+        }
     }
 }
