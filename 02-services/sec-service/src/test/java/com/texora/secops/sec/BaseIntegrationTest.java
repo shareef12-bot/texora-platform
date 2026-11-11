@@ -71,7 +71,8 @@ public abstract class BaseIntegrationTest {
 
     @Container
     static ConfluentKafkaContainer kafka =
-            new ConfluentKafkaContainer("confluentinc/cp-kafka:7.6.0");
+            new ConfluentKafkaContainer("confluentinc/cp-kafka:7.6.0")
+                    .withStartupTimeout(java.time.Duration.ofMinutes(5));
 
     @DynamicPropertySource
     static void configureProperties(DynamicPropertyRegistry registry) {

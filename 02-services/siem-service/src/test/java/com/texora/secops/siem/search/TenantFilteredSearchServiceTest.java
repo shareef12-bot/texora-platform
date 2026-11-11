@@ -58,7 +58,7 @@ class TenantFilteredSearchServiceTest {
     @Test
     void ownTenantScopeIsAllowedThrough() throws Exception {
         UUID callerTenant = UUID.randomUUID();
-        when(policyDecisionClient.evaluate(any(), anyString(), anyString())).thenReturn(PolicyDecision.allow("ok"));
+        when(policyDecisionClient.evaluate(any(), any(), anyString(), anyString())).thenReturn(PolicyDecision.allow("ok"));
         when(eventCorpusClient.search(any(), any(), any(), any(), anyInt(), anyInt()))
                 .thenReturn(new EventCorpusClient.EventCorpusSearchResult(List.of(), 0));
 
@@ -71,7 +71,7 @@ class TenantFilteredSearchServiceTest {
     @Test
     void backendImpairmentDegradesGracefullyInsteadOfFailingOutright() throws Exception {
         UUID callerTenant = UUID.randomUUID();
-        when(policyDecisionClient.evaluate(any(), anyString(), anyString())).thenReturn(PolicyDecision.allow("ok"));
+        when(policyDecisionClient.evaluate(any(), any(), anyString(), anyString())).thenReturn(PolicyDecision.allow("ok"));
         when(eventCorpusClient.search(any(), any(), any(), any(), anyInt(), anyInt()))
                 .thenThrow(new EventCorpusUnavailableException("backend down", new RuntimeException("connect timeout")));
 

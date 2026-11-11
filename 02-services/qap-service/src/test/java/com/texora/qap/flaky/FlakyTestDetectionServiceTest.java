@@ -100,6 +100,17 @@ class FlakyTestDetectionServiceTest {
         assertThat(captor.getValue().isQuarantined()).isTrue();
     }
 
+    @Test
+    void firstFailureDoesNotQuarantine() {
+        when(flakyRepo.findByTestCaseIdAndTenantId(testCaseId, tenantId)).thenReturn(Optional.empty());
+
+        service.recordOutcome(testCaseId, tenantId, false);
+
+        ArgumentCaptor<QapFlakyTestRecord> captor = ArgumentCaptor.forClass(QapFlakyTestRecord.class);
+        verify(flakyRepo).save(captor.capture());
+        assertThat(captor.getValue().isQuarantined()).isFalse();
+    }
+
     // ---- helpers ----
 
     private QapFlakyTestRecord recordWith(int runCount, int failCount, boolean quarantined) {

@@ -98,6 +98,12 @@ public class LdapSyncState {
     @Column(name = "last_error")
     private String lastError;
 
+    @Column(name = "operation", length = 16)
+    private String operation;
+
+    @Column(name = "payload")
+    private String payload;
+
     protected LdapSyncState() {
         // required by JPA
     }
@@ -181,6 +187,11 @@ public class LdapSyncState {
     public void setLastError(String lastError) {
         this.lastError = lastError;
     }
+
+    public String getOperation() { return operation; }
+    public void setOperation(String operation) { this.operation = operation; }
+    public String getPayload() { return payload; }
+    public void setPayload(String payload) { this.payload = payload; }
 
     @Override
     public boolean equals(Object other) {

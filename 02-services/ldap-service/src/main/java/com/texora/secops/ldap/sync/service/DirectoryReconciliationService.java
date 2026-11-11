@@ -37,6 +37,7 @@ public class DirectoryReconciliationService {
     private final LdapEngineAdapter ldapEngineAdapter;
     private final LdapAuditHelper auditHelper;
     private final KafkaTemplate<String, String> kafkaTemplate;
+    private final com.fasterxml.jackson.databind.ObjectMapper objectMapper;
 
     @Value("${ldap.kafka.topics.audit-events}")
     private String auditEventsTopic;
@@ -50,11 +51,13 @@ public class DirectoryReconciliationService {
     public DirectoryReconciliationService(SyncStateRepository syncStateRepository,
                                            LdapEngineAdapter ldapEngineAdapter,
                                            LdapAuditHelper auditHelper,
-                                           KafkaTemplate<String, String> kafkaTemplate) {
+                                           KafkaTemplate<String, String> kafkaTemplate,
+                                           com.fasterxml.jackson.databind.ObjectMapper objectMapper) {
         this.syncStateRepository = syncStateRepository;
         this.ldapEngineAdapter = ldapEngineAdapter;
         this.auditHelper = auditHelper;
         this.kafkaTemplate = kafkaTemplate;
+        this.objectMapper = objectMapper;
     }
 
     /**
@@ -113,6 +116,72 @@ public class DirectoryReconciliationService {
         }
     }
 
+    /** Applies one DC sync message. Never throws for engine problems: the outcome is saved as state. */
+    @Transactional
+    public void applySync(UUID tenantId, String entryDn, UUID entityId, String operation,
+                          String payload, Map<String, List<String>> attributes, UUID requestedBy) {
+        UUID actor = requestedBy != null ? requestedBy : new UUID(0L, 0L); // system actor for DC-driven syncs
+        LdapSyncState state = syncStateRepository.findByEntryDnAndTenantId(entryDn, tenantId)
+                .orElseGet(() -> new LdapSyncState(entryDn, tenantId, entityId, LdapSyncState.Status.PENDING));
+        state.setDcSourceId(entityId);
+        state.setOperation(operation);
+        state.setPayload(payload);
+        state.setLastSyncedAt(Instant.now());
+        state.setRetryCount(state.getRetryCount() + 1);
+
+        try {
+            if (!ldapEngineAdapter.ping()) {
+                throw new LdapEngineException("engine not connected");
+            }
+            if ("DELETE".equals(operation)) {
+                ldapEngineAdapter.delete(entryDn);
+            } else {
+                ldapEngineAdapter.addOrReplace(entryDn, attributes);
+            }
+            state.setStatusEnum(LdapSyncState.Status.IN_SYNC);
+            state.setLastError(null);
+            auditHelper.record(tenantId, actor, "DC_SYNC_COMPLETED",
+                    "LdapSyncState", entryDn, LdapAuditEvent.Outcome.SUCCESS, null);
+        } catch (LdapEngineException e) {
+            LOGGER.error("Engine problem syncing dn='{}' tenant={}: {}", entryDn, tenantId, e.getMessage());
+            state.setStatusEnum(LdapSyncState.Status.FAILED);
+            state.setLastError(e.getMessage());
+            auditHelper.record(tenantId, actor, "DC_SYNC_ENGINE_UNREACHABLE",
+                    "LdapSyncState", entryDn, LdapAuditEvent.Outcome.FAILURE, null);
+        }
+        syncStateRepository.save(state);
+    }
+
+    /** Builds directory attributes from DC's payload JSON. Throws on a payload without a username. */
+    public Map<String, List<String>> parseAttributes(String payload) {
+        if (payload == null || payload.isBlank()) {
+            return Map.of();
+        }
+        try {
+            Map<?, ?> p = objectMapper.readValue(payload, Map.class);
+            if (p.get("username") == null) {
+                throw new IllegalArgumentException("payload has no username");
+            }
+            String uid = String.valueOf(p.get("username"));
+            String display = p.get("displayName") == null ? uid : String.valueOf(p.get("displayName"));
+            Map<String, List<String>> attrs = new java.util.LinkedHashMap<>();
+            attrs.put("objectClass", List.of("inetOrgPerson"));
+            attrs.put("uid", List.of(uid));
+            attrs.put("cn", List.of(display));
+            attrs.put("sn", List.of(display));
+            attrs.put("displayName", List.of(display));
+            if (p.get("orgUnitId") != null) {
+                attrs.put("ou", List.of(String.valueOf(p.get("orgUnitId"))));
+            }
+            if (p.get("hrmsEmployeeId") != null) {
+                attrs.put("employeeNumber", List.of(String.valueOf(p.get("hrmsEmployeeId"))));
+            }
+            return attrs;
+        } catch (Exception e) {
+            throw new IllegalArgumentException("Invalid sync payload", e);
+        }
+    }
+
     /**
      * Scheduled retry of FAILED or PENDING sync states.
      * Runs every {@code ldap.sync.retry-after-minutes} minutes.
@@ -134,7 +203,11 @@ public class DirectoryReconciliationService {
 
         for (LdapSyncState state : candidates) {
             try {
-                reconcileEntry(state.getTenantId(), state.getEntryDn(), null);
+                if (state.getOperation() == null) {
+                    continue;
+                }
+                applySync(state.getTenantId(), state.getEntryDn(), state.getDcSourceId(), state.getOperation(),
+                        state.getPayload(), parseAttributes(state.getPayload()), null);
             } catch (Exception e) {
                 // Already logged and state updated inside reconcileEntry
                 LOGGER.warn("Retry failed for dn='{}' tenant={} (attempt {})",

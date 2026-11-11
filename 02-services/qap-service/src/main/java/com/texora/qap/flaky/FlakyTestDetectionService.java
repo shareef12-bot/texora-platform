@@ -32,6 +32,10 @@ public class FlakyTestDetectionService {
     private final QapFlakyTestRecordRepository flakyTestRecordRepository;
     private final BigDecimal quarantineThreshold;
 
+    /** Minimum number of recorded runs before a test case can be auto-quarantined. */
+    @Value("${qap.flaky.min-runs-before-quarantine:5}")
+    private int minRunsBeforeQuarantine = 5;
+
     public FlakyTestDetectionService(
             QapFlakyTestRecordRepository flakyTestRecordRepository,
             @Value("${qap.flaky.quarantine-threshold:0.30}") String quarantineThresholdStr) {
@@ -100,7 +104,8 @@ public class FlakyTestDetectionService {
         record.setUpdatedAt(Instant.now());
 
         // Auto-quarantine if threshold exceeded
-        if (!record.isQuarantined() && rate.compareTo(quarantineThreshold) > 0) {
+        if (!record.isQuarantined() && record.getRunCount() >= minRunsBeforeQuarantine
+                && rate.compareTo(quarantineThreshold) > 0) {
             record.setQuarantined(true);
             record.setQuarantinedAt(Instant.now());
             LOGGER.warn("Auto-quarantined test case {} (tenant={}) with flake_rate={}",

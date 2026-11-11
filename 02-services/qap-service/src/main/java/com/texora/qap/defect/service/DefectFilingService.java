@@ -74,12 +74,9 @@ public class DefectFilingService {
         // Step 1 — Flaky check: quarantined tests do NOT generate tickets
         if (flakyTestDetectionService.isQuarantined(testCaseId, tenantId)) {
             LOGGER.info("Test case {} is quarantined — recording occurrence but NOT filing a defect", testCaseId);
-            flakyTestDetectionService.recordOutcome(testCaseId, tenantId, false);
             return Optional.empty();
         }
 
-        // Update flake-rate tracking with this failure
-        flakyTestDetectionService.recordOutcome(testCaseId, tenantId, false);
 
         // Step 2 — Compute hash
         String hash = computeFailureSignatureHash(
