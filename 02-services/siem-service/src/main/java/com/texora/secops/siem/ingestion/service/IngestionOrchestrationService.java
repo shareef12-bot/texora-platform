@@ -97,22 +97,34 @@ public class IngestionOrchestrationService {
     private void handleFailure(SiemIngestionLog log, Exception ex) {
         int attempt = log.getAttemptCount() + 1;
         log.setAttemptCount(attempt);
-        log.setErrorSummary(truncate(ex.getMessage()));
+        log.setErrorSummary(truncate(describe(ex)));
 
         if (attempt >= maxRetries) {
             log.setStatus(IngestionLogStatus.DLQ);
             log.setNextRetryAt(null);
             ingestionMetrics.incrementDlq();
             LOGGER.error("Ingestion log {} moved to DLQ after {} attempts (source {}): {}",
-                    log.getId(), attempt, log.getIngestionSourceId(), ex.getMessage());
+                    log.getId(), attempt, log.getIngestionSourceId(), ex.getMessage(), ex);
         } else {
             long backoff = Math.min(initialBackoffMs * (1L << (attempt - 1)), maxBackoffMs);
             log.setStatus(IngestionLogStatus.RETRIED);
             log.setNextRetryAt(Instant.now().plusMillis(backoff));
             LOGGER.warn("Ingestion log {} failed attempt {} - retrying in {}ms: {}",
-                    log.getId(), attempt, backoff, ex.getMessage());
+                    log.getId(), attempt, backoff, describe(ex));
         }
         ingestionLogRepository.save(log);
+    }
+
+    /** Message plus the innermost cause, so wrapper messages never hide the real reason. */
+    private String describe(Throwable ex) {
+        Throwable root = ex;
+        for (int i = 0; i < 10 && root.getCause() != null && root.getCause() != root; i++) {
+            root = root.getCause();
+        }
+        if (root == ex) {
+            return ex.getMessage();
+        }
+        return ex.getMessage() + " <- " + root.getClass().getSimpleName() + ": " + root.getMessage();
     }
 
     private String truncate(String message) {
