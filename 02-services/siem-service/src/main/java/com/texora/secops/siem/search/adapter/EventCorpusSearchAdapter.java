@@ -4,6 +4,8 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.fasterxml.jackson.databind.SerializationFeature;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.texora.secops.siem.normalization.model.NormalizedEvent;
 import com.texora.secops.siem.search.client.EventCorpusClient;
 import com.texora.secops.siem.search.client.EventCorpusUnavailableException;
@@ -35,7 +37,9 @@ import java.util.UUID;
 public class EventCorpusSearchAdapter implements EventCorpusClient {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(EventCorpusSearchAdapter.class);
-    private static final ObjectMapper MAPPER = new ObjectMapper();
+    private static final ObjectMapper MAPPER = new ObjectMapper()
+            .registerModule(new JavaTimeModule())
+            .disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
 
     private final HttpClient httpClient;
     private final String baseUrl;
