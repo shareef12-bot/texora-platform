@@ -29,6 +29,7 @@ import org.testcontainers.containers.KafkaContainer;
 import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.utility.DockerImageName;
 
+import java.time.Duration;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -54,7 +55,8 @@ import static org.mockito.Mockito.when;
 abstract class VpnIntegrationTestSupport {
 
     static final PostgreSQLContainer<?> POSTGRES = new PostgreSQLContainer<>(DockerImageName.parse("postgres:16-alpine"));
-    static final KafkaContainer KAFKA = new KafkaContainer(DockerImageName.parse("confluentinc/cp-kafka:7.6.1"));
+    static final KafkaContainer KAFKA = new KafkaContainer(DockerImageName.parse("confluentinc/cp-kafka:7.6.1"))
+            .withStartupTimeout(Duration.ofMinutes(5));
 
     static {
         POSTGRES.start();
@@ -67,6 +69,7 @@ abstract class VpnIntegrationTestSupport {
         registry.add("spring.datasource.username", POSTGRES::getUsername);
         registry.add("spring.datasource.password", POSTGRES::getPassword);
         registry.add("spring.kafka.bootstrap-servers", KAFKA::getBootstrapServers);
+        registry.add("texora.iam.jwks-uri", () -> "http://localhost:1/jwks");
     }
 
     @MockitoBean
@@ -144,6 +147,16 @@ abstract class VpnIntegrationTestSupport {
     @SuppressWarnings("rawtypes")
     ResponseEntity<Map> get(String path, String bearer) {
         return call(HttpMethod.GET, path, bearer, null);
+    }
+
+    @SuppressWarnings("rawtypes")
+    ResponseEntity<java.util.List> getList(String path, String bearer) {
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_JSON);
+        if (bearer != null) {
+            headers.set("Authorization", bearer);
+        }
+        return rest.exchange(path, HttpMethod.GET, new HttpEntity<>(null, headers), java.util.List.class);
     }
 
     static Map<String, Object> map(Object... kv) {

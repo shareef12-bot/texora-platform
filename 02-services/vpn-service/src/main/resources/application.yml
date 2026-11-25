@@ -54,6 +54,12 @@ management:
     sampling:
       probability: 1.0
 
+texora:
+  iam:
+    jwks-uri: ${VPN_JWK_SET_URI:http://sso-service:8081/.well-known/jwks.json}
+    rbac:
+      enabled: false   # VPN has its own fail-closed RbacInterceptor (vpn.security). Library one must be off.
+
 springdoc:
   api-docs:
     enabled: true

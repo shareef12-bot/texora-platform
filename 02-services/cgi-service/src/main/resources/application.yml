@@ -57,6 +57,12 @@ springdoc:
   swagger-ui:
     enabled: ${CGI_API_DOCS_ENABLED:true}
 
+texora:
+  iam:
+    jwks-uri: ${CGI_JWK_SET_URI:http://sso-service:8081/.well-known/jwks.json}
+    rbac:
+      enabled: false   # CGI has its own fail-closed RbacInterceptor (security\RbacInterceptor.java)
+
 cgi:
   security:
     expose-api-docs: false          # true only in the "local" profile

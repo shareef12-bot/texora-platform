@@ -12,6 +12,7 @@ import java.util.Optional;
 import java.util.UUID;
 
 /** Tenant-scoped: every method takes tenantId (enforced by RepositoryTenantScopeTest). Exposes no unfiltered CRUD. */
+@org.springframework.stereotype.Repository("cgiAuditEventRepository")
 public interface AuditEventRepository extends Repository<AuditEvent, UUID> {
 
     AuditEvent save(AuditEvent event);
@@ -19,7 +20,7 @@ public interface AuditEventRepository extends Repository<AuditEvent, UUID> {
     Optional<AuditEvent> findByIdAndTenantId(UUID id, UUID tenantId);
 
     /** Empty-string action/outcome mean 'any' (avoids untyped-null parameters on PostgreSQL). */
-    @Query("select e from AuditEvent e where e.tenantId = :tenantId "
+    @Query("select e from CgiAuditEvent e where e.tenantId = :tenantId "
             + "and (:action = '' or e.action = :action) "
             + "and (:outcome = '' or e.outcome = :outcome) "
             + "and e.occurredAt >= :from and e.occurredAt <= :to")

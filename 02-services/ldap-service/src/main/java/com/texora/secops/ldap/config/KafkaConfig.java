@@ -48,6 +48,17 @@ public class KafkaConfig {
                 new ConcurrentKafkaListenerContainerFactory<>();
         factory.setConsumerFactory(consumerFactory());
         factory.getContainerProperties().setAckMode(ContainerProperties.AckMode.MANUAL_IMMEDIATE);
+        // Retry with growing pauses (1s, 2s, 4s ... max 30s), 10 times.
+        // When retries run out, publish the record to <topic>.dlq so nothing is silently skipped.
+        org.springframework.kafka.support.ExponentialBackOffWithMaxRetries backoff =
+                new org.springframework.kafka.support.ExponentialBackOffWithMaxRetries(10);
+        backoff.setInitialInterval(1000L);
+        backoff.setMultiplier(2.0);
+        backoff.setMaxInterval(30000L);
+        org.springframework.kafka.listener.DeadLetterPublishingRecoverer recoverer =
+                new org.springframework.kafka.listener.DeadLetterPublishingRecoverer(kafkaTemplate());
+        factory.setCommonErrorHandler(
+                new org.springframework.kafka.listener.DefaultErrorHandler(recoverer, backoff));
         return factory;
     }
 

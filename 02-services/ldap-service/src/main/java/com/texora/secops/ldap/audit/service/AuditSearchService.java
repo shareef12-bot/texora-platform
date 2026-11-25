@@ -34,6 +34,10 @@ public class AuditSearchService {
             size = 200; // cap page size
         }
         Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "occurredAt"));
-        return auditEventRepository.search(tenantId, action, targetType, targetId, from, to, pageable);
+        // PostgreSQL cannot find the type of a null Instant in (? IS NULL OR ...).
+        // So a missing date becomes an open-ended bound (same result as no date limit).
+        Instant fromBound = (from != null) ? from : Instant.EPOCH;
+        Instant toBound = (to != null) ? to : Instant.parse("9999-12-31T23:59:59Z");
+        return auditEventRepository.search(tenantId, action, targetType, targetId, fromBound, toBound, pageable);
     }
 }

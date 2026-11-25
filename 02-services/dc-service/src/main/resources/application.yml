@@ -32,6 +32,7 @@ spring:
       properties:
         enable.idempotence: true
         delivery.timeout.ms: 15000
+        request.timeout.ms: 10000
         max.block.ms: 5000
   # Needed by the shared TokenValidator's JwtDecoder if the iam-client does not configure its own.
   # UNSURE - see README "Unverified shared-library assumptions".
@@ -65,6 +66,7 @@ springdoc:
 
 texora:
   iam:
+    jwks-uri: ${SSO_JWKS_URI:http://localhost:9000/.well-known/jwks.json}
     rbac:
       enabled: false   # DC has its own fail-closed RbacInterceptor; suppress the library duplicate
 

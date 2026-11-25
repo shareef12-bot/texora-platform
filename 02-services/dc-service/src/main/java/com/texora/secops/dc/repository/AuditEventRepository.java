@@ -7,6 +7,7 @@ import java.util.Optional;
 import java.util.UUID;
 
 /** Insert + tenant-scoped read only. No update/delete methods exist on purpose (immutability). */
+@org.springframework.stereotype.Repository("dcAuditEventRepository")
 public interface AuditEventRepository extends Repository<DcAuditEvent, UUID> {
 
     <S extends DcAuditEvent> S save(S event);

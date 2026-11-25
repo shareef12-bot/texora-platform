@@ -208,7 +208,7 @@ class PolicyEvaluationServiceTest {
         void evaluate_returnsAllow() {
             UUID versionId = UUID.randomUUID();
             when(policyVersionRepository.findActiveVersionsForEvaluation(any(), any(), any()))
-                    .thenReturn(List.of(buildVersion(versionId, "ALLOW")));
+                    .thenReturn(List.of(buildVersionFor(versionId, "ALLOW", TEST_USER)));
 
             PolicyEvaluationResponse response = service.evaluate(
                     UUID.randomUUID(), buildRequest());
@@ -235,6 +235,62 @@ class PolicyEvaluationServiceTest {
     // Helpers
     // =====================================================================
 
+    private static final String TEST_USER = "test-user-1";
+
+    private SecPolicyVersion buildVersionFor(UUID id, String effect, String subjectId) {
+        SecPolicyVersion v = new SecPolicyVersion(
+                id, UUID.randomUUID(), UUID.randomUUID(), 1, effect,
+                Map.of("subjects", List.of(Map.of("type", "USER", "id", subjectId))),
+                UUID.randomUUID());
+        v.setStatus(SecPolicyVersion.STATUS_ACTIVE);
+        return v;
+    }
+
+    @Nested
+    @DisplayName("evaluate() - subject matching (fail-closed)")
+    class SubjectMatchingTests {
+
+        @Test
+        @DisplayName("A different user gets DENY")
+        void otherUser_denied() {
+            when(policyVersionRepository.findActiveVersionsForEvaluation(any(), any(), any()))
+                    .thenReturn(List.of(buildVersionFor(UUID.randomUUID(), "ALLOW", "someone-else")));
+            PolicyEvaluationResponse r = service.evaluate(UUID.randomUUID(), buildRequest());
+            assertThat(r.getDecision()).isEqualTo("DENY");
+            assertThat(r.getReason()).isEqualTo(PolicyEvaluationService.REASON_NO_MATCHING_POLICY);
+        }
+
+        @Test
+        @DisplayName("A version with no subjects rule matches nobody")
+        void noSubjectsRule_denied() {
+            when(policyVersionRepository.findActiveVersionsForEvaluation(any(), any(), any()))
+                    .thenReturn(List.of(buildVersion(UUID.randomUUID(), "ALLOW")));
+            PolicyEvaluationResponse r = service.evaluate(UUID.randomUUID(), buildRequest());
+            assertThat(r.getDecision()).isEqualTo("DENY");
+        }
+
+        @Test
+        @DisplayName("Explicit wildcard allows any user of that type")
+        void wildcard_allows() {
+            when(policyVersionRepository.findActiveVersionsForEvaluation(any(), any(), any()))
+                    .thenReturn(List.of(buildVersionFor(UUID.randomUUID(), "ALLOW", "*")));
+            PolicyEvaluationResponse r = service.evaluate(UUID.randomUUID(), buildRequest());
+            assertThat(r.getDecision()).isEqualTo("ALLOW");
+        }
+
+        @Test
+        @DisplayName("An applicable DENY still beats an ALLOW")
+        void denyStillWins() {
+            when(policyVersionRepository.findActiveVersionsForEvaluation(any(), any(), any()))
+                    .thenReturn(List.of(
+                            buildVersionFor(UUID.randomUUID(), "ALLOW", TEST_USER),
+                            buildVersionFor(UUID.randomUUID(), "DENY", "*")));
+            PolicyEvaluationResponse r = service.evaluate(UUID.randomUUID(), buildRequest());
+            assertThat(r.getDecision()).isEqualTo("DENY");
+            assertThat(r.getReason()).isEqualTo(PolicyEvaluationService.REASON_EXPLICIT_DENY);
+        }
+    }
+
     private SecPolicyVersion buildVersion(UUID id, String effect) {
         SecPolicyVersion v = new SecPolicyVersion(
                 id, UUID.randomUUID(), UUID.randomUUID(), 1,
@@ -246,7 +302,7 @@ class PolicyEvaluationServiceTest {
     private PolicyEvaluationRequest buildRequest() {
         PolicyEvaluationRequest req = new PolicyEvaluationRequest();
         req.setCallerService("sso");
-        req.setSubject(new PolicyEvaluationRequest.SubjectDto("USER", UUID.randomUUID().toString()));
+        req.setSubject(new PolicyEvaluationRequest.SubjectDto("USER", TEST_USER));
         req.setResource("sso:session");
         req.setAction("create");
         req.setContext(Map.of("mfaSatisfied", true));

@@ -61,7 +61,7 @@ public class TenantFilteredSearchService {
         }
         UUID scope = callerTenantId;
 
-        PolicyDecision decision = policyDecisionClient.evaluate(callerTenantId, "search.events", scope.toString());
+        PolicyDecision decision = policyDecisionClient.evaluate(callerTenantId, actorId, "search.events", scope.toString());
         auditEventPublisher.publish(callerTenantId, actorId, "search.policy-check", "normalized_event",
                 scope.toString(), decision.isAllowed() ? AuditOutcome.SUCCESS : AuditOutcome.DENIED, decision.getReason());
         if (!decision.isAllowed()) {

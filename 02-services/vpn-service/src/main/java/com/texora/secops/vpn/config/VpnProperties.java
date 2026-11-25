@@ -1,5 +1,8 @@
 package com.texora.secops.vpn.config;
 
+import org.springframework.boot.context.properties.ConfigurationProperties;
+
+@ConfigurationProperties(prefix = "vpn")
 public class VpnProperties {
 
     private SecProperties sec = new SecProperties();

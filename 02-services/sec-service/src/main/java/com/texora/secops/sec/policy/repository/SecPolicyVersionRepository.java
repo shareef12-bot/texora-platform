@@ -23,6 +23,7 @@ public interface SecPolicyVersionRepository extends JpaRepository<SecPolicyVersi
           AND pv.status = 'ACTIVE'
           AND p.resource = :resource
           AND p.action = :action
+          AND p.status = 'ACTIVE'
     """)
     List<SecPolicyVersion> findActiveVersionsForEvaluation(
             @Param("tenantId") UUID tenantId,

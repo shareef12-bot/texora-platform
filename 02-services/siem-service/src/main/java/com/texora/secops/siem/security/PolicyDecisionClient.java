@@ -42,9 +42,9 @@ public class PolicyDecisionClient {
     }
 
     /** Gate a sensitive operation (e.g. tenant-scoped search) on a live policy check. */
-    public PolicyDecision evaluate(UUID tenantId, String action, String resourceScope) {
+    public PolicyDecision evaluate(UUID tenantId, UUID actorId, String action, String resourceScope) {
         try {
-            EvaluatePolicyRequest request = new EvaluatePolicyRequest(tenantId, action, resourceScope);
+            EvaluatePolicyRequest request = new EvaluatePolicyRequest("siem-service", new EvaluatePolicyRequest.Subject("USER", actorId.toString()), "normalized_event:" + resourceScope, action, java.util.Map.of("tenantId", tenantId.toString()));
             EvaluatePolicyResponse response = restClient.post()
                     .uri("/api/v1/policies/evaluate")
                     .body(request)
@@ -57,7 +57,7 @@ public class PolicyDecisionClient {
             }
             return response.isAllowed()
                     ? PolicyDecision.allow("SEC policy evaluation allowed " + action)
-                    : PolicyDecision.deny("SEC policy evaluation denied " + action);
+                    : PolicyDecision.deny("SEC policy evaluation denied " + action + ": " + response.getReason());
         } catch (Exception ex) {
             LOGGER.error("Policy evaluation call to SEC failed for tenant {} action {} - failing closed",
                     tenantId, action, ex);

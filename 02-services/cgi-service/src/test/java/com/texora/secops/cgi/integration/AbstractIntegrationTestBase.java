@@ -44,6 +44,7 @@ abstract class AbstractIntegrationTestBase {
         registry.add("spring.datasource.username", POSTGRES::getUsername);
         registry.add("spring.datasource.password", POSTGRES::getPassword);
         registry.add("cgi.audit.retry-interval-ms", () -> "3600000");
+        registry.add("texora.iam.jwks-uri", () -> "http://localhost:1/jwks");
     }
 
     static final UUID TENANT_A = UUID.randomUUID();

@@ -21,7 +21,7 @@ class AuditImmutabilityIntegrationTest extends VpnIntegrationTestSupport {
                 .isInstanceOf(DataAccessException.class).hasMessageContaining("append-only");
         assertThatThrownBy(() -> jdbc.update("delete from vpn.vpn_audit_event where id = ?", id))
                 .isInstanceOf(DataAccessException.class).hasMessageContaining("append-only");
-        assertThatThrownBy(() -> jdbc.execute("truncate vpn.vpn_audit_event"))
+        assertThatThrownBy(() -> jdbc.execute("truncate vpn.vpn_audit_event, vpn.vpn_audit_outbox"))
                 .isInstanceOf(DataAccessException.class).hasMessageContaining("append-only");
 
         assertThat(jdbc.queryForObject("select outcome from vpn.vpn_audit_event where id = ?", String.class, id)).isEqualTo("SUCCESS");

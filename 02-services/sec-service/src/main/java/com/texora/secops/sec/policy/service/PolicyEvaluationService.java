@@ -16,6 +16,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Instant;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 /**
@@ -116,7 +117,10 @@ public class PolicyEvaluationService {
         LOGGER.debug("Evaluating policy: caller={} resource={} action={}", caller, resource, action);
 
         List<SecPolicyVersion> activeVersions =
-                policyVersionRepository.findActiveVersionsForEvaluation(tenantId, resource, action);
+                policyVersionRepository.findActiveVersionsForEvaluation(tenantId, resource, action)
+                        .stream()
+                        .filter(v -> appliesToSubject(v, request.getSubject()))
+                        .toList();
 
         int latencyMs = computeLatencyMs(startNano);
 
@@ -227,6 +231,25 @@ public class PolicyEvaluationService {
         } catch (Exception ex) {
             LOGGER.warn("Failed to increment deny metric — non-critical", ex);
         }
+    }
+
+    /** Fail-closed: a version applies only if conditions.subjects lists the caller's type and id (or "*"). */
+    static boolean appliesToSubject(SecPolicyVersion v, PolicyEvaluationRequest.SubjectDto subject) {
+        if (subject == null || subject.getType() == null || subject.getId() == null) {
+            return false;
+        }
+        Map<String, Object> conditions = v.getConditions();
+        if (conditions == null || !(conditions.get("subjects") instanceof List<?> list)) {
+            return false;
+        }
+        for (Object entry : list) {
+            if (entry instanceof Map<?, ?> m
+                    && subject.getType().equals(m.get("type"))
+                    && ("*".equals(m.get("id")) || subject.getId().equals(m.get("id")))) {
+                return true;
+            }
+        }
+        return false;
     }
 
     private int computeLatencyMs(long startNano) {

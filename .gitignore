@@ -81,7 +81,13 @@ docker-compose.override.yaml
 /sec-fast-log.txt
 /siem-fast-log.txt
 /vpn-fast-log.txt
-
+target/
+*-log*.txt
+*-summary.txt
+*-debug*.txt
+all-log.txt
+shared-source.txt
+audited-sites.txt
 # ==========================================
 # Service-Specific Check Output
 # ==========================================
@@ -94,3 +100,4 @@ docker-compose.override.yaml
 # Generated Maven output
 /build-log.txt
 /sso-test-log.txt
+
